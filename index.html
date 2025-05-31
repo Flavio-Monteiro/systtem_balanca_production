@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Balança de Vendas</title>
-    <style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Raleway:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&family=ZCOOL+XiaoWei&family=Zain:ital,wght@0,200;0,300;0,400;0,700;0,800;0,900;1,300;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- <style>
         :root {
             --primary-color: #3498db;
             --secondary-color: #2980b9;
@@ -17,13 +21,17 @@
             --warning-color: #e74c3c;
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             --transition: all 0.3s ease;
+
+             --main-font: "Chakra Petch", sans-serif;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: var(--main-font);
+            
+           
         }
 
         body {
@@ -32,6 +40,7 @@
             background-color: var(--background-color);
             color: var(--text-color);
             overflow-x: hidden;
+            
         }
 
         /* Sidebar - Estilos Atualizados */
@@ -211,6 +220,7 @@
             border-radius: 10px;
             box-shadow: var(--shadow);
             margin-bottom: 20px;
+            font-family: var(--main-font);
         }
 
         .digital-display {
@@ -534,94 +544,103 @@
                 width: calc(100% - 300px);
             }
         }
-    </style>
+    </style> -->
 </head>
 <body>
-    <!-- Sidebar -->
+      <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-content">
             <div class="sidebar-header">
-                <h2>Produtos</h2>
+                <h2><i class="fas fa-box-open"></i> Produtos</h2>
             </div>
             
             <div class="search-container">
-                <input type="text" id="productSearch" placeholder="Buscar produto...">
+                <div class="search-input">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="productSearch" placeholder="Buscar produto..." aria-label="Buscar produto">
+                </div>
             </div>
             
             <div class="product-list-container">
-                <ul class="product-list" id="productList">
+                <ul class="product-list" id="productList" role="listbox">
                     <!-- Product items will be inserted here by JavaScript -->
                 </ul>
             </div>
             
             <div class="product-settings">
-                <h3>Configurações do Produto</h3>
+                <h3><i class="fas fa-cog"></i> Configurações do Produto</h3>
                 
                 <div class="setting-group">
-                    <label for="editProductCode">Código</label>
-                    <input type="text" id="editProductCode" readonly>
+                    <label for="editProductCode"><i class="fas fa-barcode"></i> Código</label>
+                    <input type="text" id="editProductCode" readonly aria-readonly="true">
                 </div>
                 
                 <div class="setting-group">
-                    <label for="editProductName">Nome</label>
-                    <input type="text" id="editProductName" readonly>
+                    <label for="editProductName"><i class="fas fa-tag"></i> Nome</label>
+                    <input type="text" id="editProductName" readonly aria-readonly="true">
                 </div>
                 
                 <div class="setting-group">
-                    <label for="editProductTara">Tara (kg)</label>
-                    <input type="number" id="editProductTara" step="0.001" min="0">
+                    <label for="editProductTara"><i class="fas fa-weight-hanging"></i> Tara (kg)</label>
+                    <input type="number" id="editProductTara" step="0.001" min="0" aria-label="Tara do produto">
                 </div>
                 
                 <div class="setting-group">
-                    <label for="editProductValue">Valor por Kg (R$)</label>
-                    <input type="number" id="editProductValue" step="0.01" min="0">
+                    <label for="editProductValue"><i class="fas fa-money-bill-wave"></i> Valor por Kg (R$)</label>
+                    <input type="number" id="editProductValue" step="0.01" min="0" aria-label="Valor por quilograma">
                 </div>
                 
-                <button class="save-btn" id="saveProductSettings">Salvar Configurações</button>
+                <button class="save-btn" id="saveProductSettings" aria-label="Salvar configurações">
+                    <i class="fas fa-save"></i> Salvar Configurações
+                </button>
             </div>
         </div>
     </div>
     
     <!-- Sidebar overlay for mobile -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="sidebar-overlay" id="sidebarOverlay" role="button" aria-label="Fechar menu"></div>
     
     <!-- Main Content -->
     <div class="main-content">
-        <button class="menu-toggle" id="menuToggle">☰</button>
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu">
+            <i class="fas fa-bars"></i>
+        </button>
         
         <!-- Digital Panel -->
         <div class="digital-panel">
             <div class="digital-display">
-                <h3>Peso Líquido</h3>
-                <div class="digital-value" id="netWeightDisplay">0.000 kg</div>
+                <h3><i class="fas fa-weight"></i> Peso Líquido</h3>
+                <div class="digital-value" id="netWeightDisplay" aria-live="polite">0.000 kg</div>
             </div>
             <div class="digital-display">
-                <h3>Valor Total</h3>
-                <div class="digital-value" id="totalValueDisplay">R$ 0,00</div>
+                <h3><i class="fas fa-calculator"></i> Valor Total</h3>
+                <div class="digital-value" id="totalValueDisplay" aria-live="polite">R$ 0,00</div>
             </div>
         </div>
         
         <!-- Weighing Panel -->
         <div class="weighing-panel">
             <div class="panel-header">
-                <h2>Balança</h2>
+                <h2><i class="fas fa-balance-scale"></i> Balança</h2>
             </div>
             
             <form id="weighingForm">
                 <div class="form-row">
                     <div class="form-col">
                         <div class="form-group">
-                            <label for="productCode">Código do Produto</label>
-                            <div style="display: flex; gap: 10px;">
-                                <input type="text" id="productCode" required>
-                                <button type="button" class="btn btn-primary" id="findProduct">Buscar</button>
+                            <label for="productCode"><i class="fas fa-barcode"></i> Código do Produto <span class="required">*</span></label>
+                            <div class="input-group">
+                                <input type="text" id="productCode" required aria-required="true" aria-label="Código do produto">
+                                <button type="button" class="btn btn-primary" id="findProduct" aria-label="Buscar produto">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
                             </div>
                         </div>
                     </div>
                     <div class="form-col">
                         <div class="form-group">
-                            <label for="productName">Produto</label>
-                            <input type="text" id="productName" readonly>
+                            <label for="productName"><i class="fas fa-tag"></i> Produto</label>
+                            <input type="text" id="productName" readonly aria-readonly="true">
                         </div>
                     </div>
                 </div>
@@ -629,14 +648,14 @@
                 <div class="form-row">
                     <div class="form-col">
                         <div class="form-group">
-                            <label for="productTara">Tara (kg)</label>
-                            <input type="number" id="productTara" step="0.001" min="0" readonly>
+                            <label for="productTara"><i class="fas fa-weight-hanging"></i> Tara (kg)</label>
+                            <input type="number" id="productTara" step="0.001" min="0" readonly aria-readonly="true">
                         </div>
                     </div>
                     <div class="form-col">
                         <div class="form-group">
-                            <label for="productValue">Valor do Kg (R$)</label>
-                            <input type="number" id="productValue" step="0.01" min="0" readonly>
+                            <label for="productValue"><i class="fas fa-money-bill-wave"></i> Valor do Kg (R$)</label>
+                            <input type="number" id="productValue" step="0.01" min="0" readonly aria-readonly="true">
                         </div>
                     </div>
                 </div>
@@ -644,20 +663,22 @@
                 <div class="form-row">
                     <div class="form-col">
                         <div class="form-group">
-                            <label for="grossWeight">Peso Bruto (kg)</label>
-                            <input type="number" id="grossWeight" step="0.001" min="0" required>
+                            <label for="grossWeight"><i class="fas fa-weight"></i> Peso Bruto (kg) <span class="required">*</span></label>
+                            <input type="number" id="grossWeight" step="0.001" min="0" required aria-required="true">
                         </div>
                     </div>
                     <div class="form-col">
                         <div class="form-group">
-                            <label for="employeeName">Funcionário</label>
-                            <input type="text" id="employeeName" required>
+                            <label for="employeeName"><i class="fas fa-user"></i> Funcionário <span class="required">*</span></label>
+                            <input type="text" id="employeeName" required aria-required="true">
                         </div>
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <button type="submit" class="btn btn-primary">Registrar</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <i class="fas fa-save"></i> Registrar
+                    </button>
                 </div>
             </form>
         </div>
@@ -665,44 +686,58 @@
         <!-- Records Panel -->
         <div class="records-panel">
             <div class="table-header">
-                <h2>Registros de Vendas</h2>
+                <h2><i class="fas fa-history"></i> Registros de Vendas</h2>
                 <div class="action-btns">
-                    <button class="btn btn-primary" id="generateReport">Gerar Relatório</button>
-                    <button class="btn btn-danger" id="clearAllData">Apagar Todos os Dados</button>
+                    <button class="btn btn-primary" id="generateReport" aria-label="Gerar relatório">
+                        <i class="fas fa-file-pdf"></i> Gerar Relatório
+                    </button>
+                    <button class="btn btn-danger" id="clearAllData" aria-label="Apagar todos os dados">
+                        <i class="fas fa-trash-alt"></i> Apagar Todos
+                    </button>
                 </div>
             </div>
             
-            <table id="recordsTable">
-                <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>Funcionário</th>
-                        <th>Produto</th>
-                        <th>Peso Líquido (kg)</th>
-                        <th>Valor por Kg (R$)</th>
-                        <th>Valor Total (R$)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Records will be inserted here by JavaScript -->
-                </tbody>
-            </table>
+            <div class="table-container">
+                <table id="recordsTable" aria-label="Registros de vendas">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Funcionário</th>
+                            <th>Produto</th>
+                            <th>Peso Líquido (kg)</th>
+                            <th>Valor por Kg (R$)</th>
+                            <th>Valor Total (R$)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Records will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+                <div class="pagination" id="pagination">
+                    <!-- Pagination will be inserted here by JavaScript -->
+                </div>
+            </div>
         </div>
     </div>
     
     <!-- Notification -->
-    <div class="notification" id="notification"></div>
+    <div class="notification" id="notification" role="alert"></div>
     
     <!-- Confirmation Modal -->
-    <div class="modal" id="confirmationModal">
+    <div class="modal" id="confirmationModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Confirmação</h3>
+                <h3 id="modalTitle"><i class="fas fa-exclamation-triangle"></i> Confirmação</h3>
+                <button class="close-modal" id="closeModal" aria-label="Fechar modal">&times;</button>
             </div>
             <p id="modalMessage">Tem certeza que deseja apagar todos os dados? Esta ação não pode ser desfeita.</p>
             <div class="modal-footer">
-                <button class="btn" id="cancelAction">Cancelar</button>
-                <button class="btn btn-danger" id="confirmAction">Confirmar</button>
+                <button class="btn" id="cancelAction">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button class="btn btn-danger" id="confirmAction">
+                    <i class="fas fa-check"></i> Confirmar
+                </button>
             </div>
         </div>
     </div>
@@ -717,7 +752,9 @@
         </div>
     </div>
 
-    <script>
+
+    <script src="main.js"></script>
+    <!-- <script>
         // Base de dados de produtos
         const produtos = {
             "1096": {"nome": "BEIJINHO"},
@@ -1286,6 +1323,6 @@
 
         // Initialize the app when DOM is loaded
         document.addEventListener('DOMContentLoaded', init);
-    </script>
+    </script> -->
 </body>
 </html>
