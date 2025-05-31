@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Balança de Vendas</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --background-color: #f5f7fa;
+            --sidebar-color: #2c3e50;
+            --text-color: #333;
+            --light-text: #ecf0f1;
+            --border-color: #ddd;
+            --success-color: #2ecc71;
+            --warning-color: #e74c3c;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+
+        /* Sidebar - Estilos Atualizados */
+        .sidebar {
+            width: 280px;
+            background-color: var(--sidebar-color);
+            color: var(--light-text);
+            padding: 15px;
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            transition: var(--transition);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(-100%);
+        }
+
+        .sidebar.active {
+            transform: translateX(0);
+        }
+
+        .sidebar-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 10px 0;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar h2 {
+            font-size: 1.3rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-container {
+            margin-bottom: 15px;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 4px;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .product-list-container {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            min-height: 200px;
+        }
+
+        .product-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: 100%;
+            gap: 4px;
+        }
+
+        .product-item {
+            padding: 8px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .product-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .product-item.active {
+            background-color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .product-code {
+            font-weight: bold;
+            margin-right: 8px;
+            flex-shrink: 0;
+            width: 50px;
+            text-align: right;
+        }
+
+        .product-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .product-settings {
+            padding: 15px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+        }
+
+        .product-settings h3 {
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        .setting-group {
+            margin-bottom: 12px;
+        }
+
+        .setting-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .setting-group input {
+            width: 100%;
+            padding: 7px;
+            border-radius: 4px;
+            border: none;
+            font-size: 0.85rem;
+        }
+
+        .save-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: var(--transition);
+        }
+
+        .save-btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        /* Menu Toggle */
+        .menu-toggle {
+            display: block;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            padding: 5px;
+        }
+
+        /* Digital Panel */
+        .digital-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .digital-display {
+            text-align: center;
+        }
+
+        .digital-display h3 {
+            font-size: 1rem;
+            color: #777;
+            margin-bottom: 10px;
+        }
+
+        .digital-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        /* Weighing Panel */
+        .weighing-panel {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .panel-header h2 {
+            font-size: 1.3rem;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-row {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-col {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-danger {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            opacity: 0.9;
+        }
+
+        /* Records Table */
+        .records-panel {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+        }
+
+        .table-header {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        th, td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.85rem;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            color: white;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            max-width: 90%;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background-color: var(--success-color);
+        }
+
+        .notification.error {
+            background-color: var(--warning-color);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: var(--shadow);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Overlay for sidebar when open on mobile */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* Print Styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .print-section, .print-section * {
+                visibility: visible;
+            }
+            .print-section {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        /* Responsive Design */
+        @media (min-width: 576px) {
+            .digital-panel {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            
+            .digital-display {
+                text-align: center;
+                flex: 1;
+            }
+            
+            .table-header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .sidebar {
+                transform: translateX(0);
+                position: fixed;
+                height: 100vh;
+                z-index: 100;
+            }
+            
+            .main-content {
+                margin-left: 280px;
+                width: calc(100% - 280px);
+            }
+            
+            .menu-toggle {
+                display: none;
+            }
+            
+            .form-row {
+                flex-direction: row;
+                gap: 15px;
+            }
+            
+            .sidebar-overlay {
+                display: none !important;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .digital-value {
+                font-size: 2rem;
+            }
+            
+            .panel-header h2 {
+                font-size: 1.5rem;
+            }
+            
+            th, td {
+                padding: 12px 15px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .sidebar {
+                width: 300px;
+            }
+            
+            .main-content {
+                margin-left: 300px;
+                width: calc(100% - 300px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-content">
+            <div class="sidebar-header">
+                <h2>Produtos</h2>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" id="productSearch" placeholder="Buscar produto...">
+            </div>
+            
+            <div class="product-list-container">
+                <ul class="product-list" id="productList">
+                    <!-- Product items will be inserted here by JavaScript -->
+                </ul>
+            </div>
+            
+            <div class="product-settings">
+                <h3>Configurações do Produto</h3>
+                
+                <div class="setting-group">
+                    <label for="editProductCode">Código</label>
+                    <input type="text" id="editProductCode" readonly>
+                </div>
+                
+                <div class="setting-group">
+                    <label for="editProductName">Nome</label>
+                    <input type="text" id="editProductName" readonly>
+                </div>
+                
+                <div class="setting-group">
+                    <label for="editProductTara">Tara (kg)</label>
+                    <input type="number" id="editProductTara" step="0.001" min="0">
+                </div>
+                
+                <div class="setting-group">
+                    <label for="editProductValue">Valor por Kg (R$)</label>
+                    <input type="number" id="editProductValue" step="0.01" min="0">
+                </div>
+                
+                <button class="save-btn" id="saveProductSettings">Salvar Configurações</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        
+        <!-- Digital Panel -->
+        <div class="digital-panel">
+            <div class="digital-display">
+                <h3>Peso Líquido</h3>
+                <div class="digital-value" id="netWeightDisplay">0.000 kg</div>
+            </div>
+            <div class="digital-display">
+                <h3>Valor Total</h3>
+                <div class="digital-value" id="totalValueDisplay">R$ 0,00</div>
+            </div>
+        </div>
+        
+        <!-- Weighing Panel -->
+        <div class="weighing-panel">
+            <div class="panel-header">
+                <h2>Balança</h2>
+            </div>
+            
+            <form id="weighingForm">
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="productCode">Código do Produto</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="productCode" required>
+                                <button type="button" class="btn btn-primary" id="findProduct">Buscar</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="productName">Produto</label>
+                            <input type="text" id="productName" readonly>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="productTara">Tara (kg)</label>
+                            <input type="number" id="productTara" step="0.001" min="0" readonly>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="productValue">Valor do Kg (R$)</label>
+                            <input type="number" id="productValue" step="0.01" min="0" readonly>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="grossWeight">Peso Bruto (kg)</label>
+                            <input type="number" id="grossWeight" step="0.001" min="0" required>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="employeeName">Funcionário</label>
+                            <input type="text" id="employeeName" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Registrar</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Records Panel -->
+        <div class="records-panel">
+            <div class="table-header">
+                <h2>Registros de Vendas</h2>
+                <div class="action-btns">
+                    <button class="btn btn-primary" id="generateReport">Gerar Relatório</button>
+                    <button class="btn btn-danger" id="clearAllData">Apagar Todos os Dados</button>
+                </div>
+            </div>
+            
+            <table id="recordsTable">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Funcionário</th>
+                        <th>Produto</th>
+                        <th>Peso Líquido (kg)</th>
+                        <th>Valor por Kg (R$)</th>
+                        <th>Valor Total (R$)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Records will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+    
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirmação</h3>
+            </div>
+            <p id="modalMessage">Tem certeza que deseja apagar todos os dados? Esta ação não pode ser desfeita.</p>
+            <div class="modal-footer">
+                <button class="btn" id="cancelAction">Cancelar</button>
+                <button class="btn btn-danger" id="confirmAction">Confirmar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Report Section (hidden until printing) -->
+    <div id="printSection" style="display: none;">
+        <div class="print-section">
+            <h1 style="text-align: center; margin-bottom: 20px;">Relatório de Vendas</h1>
+            <div id="reportContent">
+                <!-- Report content will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Base de dados de produtos
+        const produtos = {
+            "1096": {"nome": "BEIJINHO"},
+            "17834": {"nome": "BISCOITO CACETINHO"},
+            "5913": {"nome": "BISCOITO CHAMPAGNE"},
+            "3056": {"nome": "BOLACHA CAMELO"},
+            "7481": {"nome": "BOLACHA DE COCO"},
+            "7207": {"nome": "BOLACHA MIMOSA"},
+            "2566": {"nome": "BOLACHA REG INTEGRAL"},
+            "7214": {"nome": "BOLACHA REGALIA"},
+            "7153": {"nome": "BOLACHA ROSQUINHA"},
+            "9300": {"nome": "BOLINHO DE BACALHAU"},
+            "9324": {"nome": "BOLINHO DE CHARQUE"},
+            "4724": {"nome": "BOLINHO DE PIZZA"},
+            "9331": {"nome": "BOLINHO DE QUEIJO"},
+            "17874": {"nome": "BOLO AIPIM KG"},
+            "73309": {"nome": "BOLO BACIA C/1 UN"},
+            "73305": {"nome": "BOLO BACIA C/4 UN"},
+            "17870": {"nome": "BOLO CAÇAROLA C/QUEIJO"},
+            "1427": {"nome": "BOLO CENOURA"},
+            "17320": {"nome": "BOLO CENOURA SIMPLES"},
+            "17295": {"nome": "BOLO CHOC CREMOSO"},
+            "6927": {"nome": "BOLO COM LARANJA"},
+            "1001": {"nome": "BOLO COM PASSAS"},
+            "9751": {"nome": "BOLO DE ABACAXI"},
+            "7085": {"nome": "BOLO DE AMENDOIM"},
+            "9492": {"nome": "BOLO DE BANANA"},
+            "7450": {"nome": "BOLO DE CHOCOLATE"},
+            "7016": {"nome": "BOLO DE COCADA"},
+            "3674": {"nome": "BOLO DE FRUTAS VERMELHAS"},
+            "6293": {"nome": "BOLO DE MACAXEIRA"},
+            "6347": {"nome": "BOLO DE MASSA PUBA"},
+            "6361": {"nome": "BOLO DE MILHO"},
+            "6198": {"nome": "BOLO FORMIGUEIRO"},
+            "6149": {"nome": "BOLO GOIABADA"},
+            "2300": {"nome": "BOLO INDIANO"},
+            "6217": {"nome": "BOLO INGLES"},
+            "6088": {"nome": "BOLO MASSA PUBA"},
+            "7177": {"nome": "BOLO MESCLADO"},
+            "7108": {"nome": "BOLO PÉ DE MOLEQUE PAÇOCA"},
+            "3063": {"nome": "BRASILEIRA"},
+            "1070": {"nome": "BRIGADEIRO"},
+            "4121": {"nome": "BRIOCHE COM CÔCO"},
+            "4145": {"nome": "BRIOCHE COM FRUTAS"},
+            "6095": {"nome": "BRIOCHE CREME CHOC"},
+            "6514": {"nome": "BROA DA CASA"},
+            "8174": {"nome": "CAROLINA"},
+            "9851": {"nome": "COXINHA CATUPIRY"},
+            "5227": {"nome": "COXINHA DE CARNE"},
+            "9837": {"nome": "COXINHA DE FRANGO"},
+            "1695": {"nome": "DELICIA DE ABACAXI"},
+            "6000": {"nome": "DIPLOMATA"},
+            "1020": {"nome": "DOCE MARIA MOLE"},
+            "3410": {"nome": "DOCINHO"},
+            "998949": {"nome": "EMPADA"},
+            "8419": {"nome": "ENROLADINHO"},
+            "6613": {"nome": "FARINHA DE ROSCA"},
+            "1823": {"nome": "FOCACCIA"},
+            "9913": {"nome": "FOLHADO DE FRANGO"},
+            "6965": {"nome": "GALETO"},
+            "596": {"nome": "KIELZ"},
+            "6615": {"nome": "MINI COXINHA"},
+            "953": {"nome": "MINI CROISSANT"},
+            "1631": {"nome": "MOUSSE DE CHOCOLATE"},
+            "1488": {"nome": "MOUSSE DE MARACUJA"},
+            "3346": {"nome": "MOUSSE DE MORANGO"},
+            "4144": {"nome": "PAINETTOME CINCO LATE"},
+            "6873": {"nome": "PÃO BAGUETE"},
+            "9690": {"nome": "PÃO BATATA"},
+            "7078": {"nome": "PÃO BOLACHÃO"},
+            "17864": {"nome": "PÃO BRIOCHE"},
+            "20139": {"nome": "PÃO DE ALHO"},
+            "7030": {"nome": "PÃO DE FORMA"},
+            "21933": {"nome": "PÃO DE LEITE"},
+            "34083": {"nome": "PÃO DE MILHO COQU"},
+            "7115": {"nome": "PÃO DE QUEIJO"},
+            "7496": {"nome": "PÃO DELICIA"},
+            "949": {"nome": "PÃO DOCE"},
+            "4251": {"nome": "PÃO FRANCÊS"},
+            "3822": {"nome": "PÃO HAMBÚRGUER"},
+            "3073": {"nome": "PÃO HAMBÚRGUER GERGELIM"},
+            "3957": {"nome": "PÃO HOT DOG RECHEADO"},
+            "7092": {"nome": "PÃO INTEGRAL"},
+            "6835": {"nome": "PÃO ITALIANO"},
+            "6316": {"nome": "PÃO MANTEIGA"},
+            "21931": {"nome": "PÃO PORTUGUÊS"},
+            "7122": {"nome": "PÃO RECIFE"},
+            "9317": {"nome": "PÃO SALADA RUSSA"},
+            "1984": {"nome": "PASTEL DE PORNAS"},
+            "9713": {"nome": "PETIT-FOUR DE COMBA"},
+            "4985": {"nome": "PIZZA SABORES"},
+            "7061": {"nome": "PUDIM"},
+            "9157": {"nome": "ROCAMBOLE"},
+            "6989": {"nome": "SALGADINHO DE QUEIJO"},
+            "1023": {"nome": "SANDUICHE NATURAL"},
+            "408": {"nome": "SOBREMESA"},
+            "7893": {"nome": "SUSPINO"},
+            "8648": {"nome": "TORRADA DE BOLO"},
+            "6781": {"nome": "TORRADA SIMPLES"},
+            "1441": {"nome": "TORTA DE ABACAXI"},
+            "7160": {"nome": "TORTA DE BANANA"},
+            "7054": {"nome": "TORTA DE CHOCOLATE"},
+            "1821": {"nome": "TORTA DE MARACUJA"},
+            "6491": {"nome": "TORTA DE MORANGO"},
+            "1907": {"nome": "TORTA DOCE DE LEITE"},
+            "1785": {"nome": "TORTA HOLANDESA"},
+            "6422": {"nome": "TORTA LEITE CONDENS"},
+            "1549": {"nome": "TORTA MOUSSE DE LIMAO"},
+            "69231": {"nome": "TORTA SABORES"},
+            "5104": {"nome": "TORTA SALGADA"},
+            "8485": {"nome": "TORTILETE"},
+            "34096": {"nome": "TORTILLE"}
+        };
+
+        // DOM Elements
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const menuToggle = document.getElementById('menuToggle');
+        const productList = document.getElementById('productList');
+        const productSearch = document.getElementById('productSearch');
+        const editProductCode = document.getElementById('editProductCode');
+        const editProductName = document.getElementById('editProductName');
+        const editProductTara = document.getElementById('editProductTara');
+        const editProductValue = document.getElementById('editProductValue');
+        const saveProductSettings = document.getElementById('saveProductSettings');
+        const productCode = document.getElementById('productCode');
+        const productName = document.getElementById('productName');
+        const productTara = document.getElementById('productTara');
+        const productValue = document.getElementById('productValue');
+        const grossWeight = document.getElementById('grossWeight');
+        const employeeName = document.getElementById('employeeName');
+        const weighingForm = document.getElementById('weighingForm');
+        const findProduct = document.getElementById('findProduct');
+        const netWeightDisplay = document.getElementById('netWeightDisplay');
+        const totalValueDisplay = document.getElementById('totalValueDisplay');
+        const recordsTable = document.getElementById('recordsTable').getElementsByTagName('tbody')[0];
+        const generateReport = document.getElementById('generateReport');
+        const clearAllData = document.getElementById('clearAllData');
+        const notification = document.getElementById('notification');
+        const confirmationModal = document.getElementById('confirmationModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const cancelAction = document.getElementById('cancelAction');
+        const confirmAction = document.getElementById('confirmAction');
+        const printSection = document.getElementById('printSection');
+        const reportContent = document.getElementById('reportContent');
+
+        // State
+        let selectedProduct = null;
+        let records = [];
+        let productSettings = {};
+
+        // Initialize the app
+        function init() {
+            loadProductSettings();
+            renderProductList();
+            loadRecords();
+            setupEventListeners();
+        }
+
+        // Load product settings from localStorage
+        function loadProductSettings() {
+            const settings = localStorage.getItem('productSettings');
+            if (settings) {
+                productSettings = JSON.parse(settings);
+            } else {
+                // Initialize with default values if no settings exist
+                Object.keys(produtos).forEach(code => {
+                    productSettings[code] = {
+                        tara: 0,
+                        value: 0
+                    };
+                });
+                saveProductSettingsToStorage();
+            }
+        }
+
+        // Save product settings to localStorage
+        function saveProductSettingsToStorage() {
+            localStorage.setItem('productSettings', JSON.stringify(productSettings));
+        }
+
+        // Load records from localStorage
+        function loadRecords() {
+            const savedRecords = localStorage.getItem('weighingRecords');
+            if (savedRecords) {
+                records = JSON.parse(savedRecords);
+                renderRecordsTable();
+            }
+        }
+
+        // Save records to localStorage
+        function saveRecordsToStorage() {
+            localStorage.setItem('weighingRecords', JSON.stringify(records));
+        }
+
+        // Render product list
+        function renderProductList(filter = '') {
+            productList.innerHTML = '';
+            
+            const filteredProducts = Object.keys(produtos)
+                .filter(code => {
+                    const name = produtos[code].nome.toLowerCase();
+                    const searchTerm = filter.toLowerCase();
+                    return code.includes(searchTerm) || name.includes(searchTerm);
+                })
+                .sort((a, b) => produtos[a].nome.localeCompare(produtos[b].nome));
+            
+            filteredProducts.forEach(code => {
+                const li = document.createElement('li');
+                li.className = 'product-item';
+                li.dataset.code = code;
+                
+                li.innerHTML = `
+                    <span class="product-code">${code}</span>
+                    <span class="product-name">${produtos[code].nome}</span>
+                `;
+                
+                li.addEventListener('click', () => selectProduct(code));
+                productList.appendChild(li);
+            });
+        }
+
+        // Select a product
+        function selectProduct(code) {
+            // Remove active class from all items
+            document.querySelectorAll('.product-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Add active class to selected item
+            const selectedItem = document.querySelector(`.product-item[data-code="${code}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('active');
+            }
+            
+            selectedProduct = code;
+            editProductCode.value = code;
+            editProductName.value = produtos[code].nome;
+            editProductTara.value = productSettings[code].tara;
+            editProductValue.value = productSettings[code].value.toFixed(2);
+            
+            // Also update the weighing form
+            productCode.value = code;
+            productName.value = produtos[code].nome;
+            productTara.value = productSettings[code].tara;
+            productValue.value = productSettings[code].value.toFixed(2);
+            
+            // Scroll to the selected item
+            if (selectedItem) {
+                selectedItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            // Close sidebar on mobile
+            if (window.innerWidth < 768) {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            }
+        }
+
+        // Find product by code
+        function findProductByCode() {
+            const code = productCode.value.trim();
+            if (produtos[code]) {
+                selectProduct(code);
+            } else {
+                showNotification('Produto não encontrado', 'error');
+            }
+        }
+
+        // Calculate net weight and total value
+        function calculateValues() {
+            const gross = parseFloat(grossWeight.value) || 0;
+            const tara = parseFloat(productTara.value) || 0;
+            const valuePerKg = parseFloat(productValue.value) || 0;
+            
+            const net = Math.max(0, gross - tara);
+            const total = net * valuePerKg;
+            
+            netWeightDisplay.textContent = net.toFixed(3) + ' kg';
+            totalValueDisplay.textContent = 'R$ ' + total.toFixed(2);
+            
+            return { net, total };
+        }
+
+        // Register a new weighing
+        function registerWeighing(e) {
+            e.preventDefault();
+            
+            if (!selectedProduct) {
+                showNotification('Selecione um produto primeiro', 'error');
+                return;
+            }
+            
+            if (!grossWeight.value || !employeeName.value) {
+                showNotification('Preencha todos os campos obrigatórios', 'error');
+                return;
+            }
+            
+            const { net, total } = calculateValues();
+            
+            const record = {
+                id: Date.now(),
+                date: new Date().toISOString(),
+                productCode: selectedProduct,
+                productName: produtos[selectedProduct].nome,
+                employee: employeeName.value,
+                grossWeight: parseFloat(grossWeight.value),
+                tara: parseFloat(productTara.value),
+                netWeight: net,
+                valuePerKg: parseFloat(productValue.value),
+                totalValue: total
+            };
+            
+            records.unshift(record);
+            saveRecordsToStorage();
+            renderRecordsTable();
+            
+            // Reset form
+            grossWeight.value = '';
+            employeeName.value = '';
+            
+            showNotification('Registro salvo com sucesso', 'success');
+        }
+
+        // Render records table
+        function renderRecordsTable() {
+            recordsTable.innerHTML = '';
+            
+            if (records.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td colspan="6" style="text-align: center;">Nenhum registro encontrado</td>';
+                recordsTable.appendChild(tr);
+                return;
+            }
+            
+            records.forEach(record => {
+                const tr = document.createElement('tr');
+                
+                const date = new Date(record.date);
+                const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                
+                tr.innerHTML = `
+                    <td>${formattedDate}</td>
+                    <td>${record.employee}</td>
+                    <td>${record.productName}</td>
+                    <td>${record.netWeight.toFixed(3)}</td>
+                    <td>${record.valuePerKg.toFixed(2)}</td>
+                    <td>R$ ${record.totalValue.toFixed(2)}</td>
+                `;
+                
+                recordsTable.appendChild(tr);
+            });
+        }
+
+        // Generate PDF report
+        function generatePDFReport() {
+            if (records.length === 0) {
+                showNotification('Nenhum registro para gerar relatório', 'error');
+                return;
+            }
+            
+            // Group records by product
+            const groupedRecords = {};
+            records.forEach(record => {
+                if (!groupedRecords[record.productCode]) {
+                    groupedRecords[record.productCode] = {
+                        name: record.productName,
+                        records: [],
+                        totalNetWeight: 0,
+                        totalValue: 0
+                    };
+                }
+                
+                groupedRecords[record.productCode].records.push(record);
+                groupedRecords[record.productCode].totalNetWeight += record.netWeight;
+                groupedRecords[record.productCode].totalValue += record.totalValue;
+            });
+            
+            // Calculate grand totals
+            let grandTotalNetWeight = 0;
+            let grandTotalValue = 0;
+            
+            Object.keys(groupedRecords).forEach(code => {
+                grandTotalNetWeight += groupedRecords[code].totalNetWeight;
+                grandTotalValue += groupedRecords[code].totalValue;
+            });
+            
+            // Generate HTML for the report
+            let reportHTML = `
+                <style>
+                    .report { font-family: Arial, sans-serif; }
+                    .report h2 { color: #333; margin-top: 20px; }
+                    .report table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                    .report th, .report td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                    .report th { background-color: #f2f2f2; }
+                    .report .total { font-weight: bold; }
+                    .report .grand-total { font-weight: bold; font-size: 1.2em; margin-top: 20px; }
+                </style>
+                <div class="report">
+            `;
+            
+            // Add sections for each product
+            Object.keys(groupedRecords).forEach(code => {
+                const group = groupedRecords[code];
+                
+                reportHTML += `
+                    <h2>${group.name}</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Funcionário</th>
+                                <th>Peso Líquido (kg)</th>
+                                <th>Valor por Kg (R$)</th>
+                                <th>Valor Total (R$)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                group.records.forEach(record => {
+                    const date = new Date(record.date);
+                    const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                    
+                    reportHTML += `
+                        <tr>
+                            <td>${formattedDate}</td>
+                            <td>${record.employee}</td>
+                            <td>${record.netWeight.toFixed(3)}</td>
+                            <td>${record.valuePerKg.toFixed(2)}</td>
+                            <td>${record.totalValue.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+                
+                reportHTML += `
+                        </tbody>
+                        <tfoot>
+                            <tr class="total">
+                                <td colspan="2">Total</td>
+                                <td>${group.totalNetWeight.toFixed(3)}</td>
+                                <td></td>
+                                <td>${group.totalValue.toFixed(2)}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                `;
+            });
+            
+            // Add grand totals
+            reportHTML += `
+                <div class="grand-total">
+                    Total Geral: Peso Líquido = ${grandTotalNetWeight.toFixed(3)} kg | Valor Total = R$ ${grandTotalValue.toFixed(2)}
+                </div>
+            `;
+            
+            reportHTML += '</div>';
+            
+            // Set the report content
+            reportContent.innerHTML = reportHTML;
+            
+            // Show print dialog
+            printSection.style.display = 'block';
+            window.print();
+            printSection.style.display = 'none';
+        }
+
+        // Clear all data
+        function clearData() {
+            records = [];
+            saveRecordsToStorage();
+            renderRecordsTable();
+            showNotification('Todos os registros foram apagados', 'success');
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Menu toggle for mobile
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+            
+            // Close sidebar when clicking overlay
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+            
+            // Product search
+            productSearch.addEventListener('input', (e) => {
+                renderProductList(e.target.value);
+            });
+            
+            // Save product settings
+            saveProductSettings.addEventListener('click', () => {
+                if (!selectedProduct) return;
+                
+                productSettings[selectedProduct] = {
+                    tara: parseFloat(editProductTara.value) || 0,
+                    value: parseFloat(editProductValue.value) || 0
+                };
+                
+                saveProductSettingsToStorage();
+                
+                // Update weighing form
+                productTara.value = productSettings[selectedProduct].tara;
+                productValue.value = productSettings[selectedProduct].value.toFixed(2);
+                
+                showNotification('Configurações salvas com sucesso', 'success');
+            });
+            
+            // Find product
+            findProduct.addEventListener('click', findProductByCode);
+            
+            // Product code input - try to find when user presses Enter
+            productCode.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    findProductByCode();
+                }
+            });
+            
+            // Calculate values when gross weight changes
+            grossWeight.addEventListener('input', calculateValues);
+            
+            // Form submission
+            weighingForm.addEventListener('submit', registerWeighing);
+            
+            // Generate report
+            generateReport.addEventListener('click', generatePDFReport);
+            
+            // Clear all data
+            clearAllData.addEventListener('click', () => {
+                modalMessage.textContent = 'Tem certeza que deseja apagar todos os dados? Esta ação não pode ser desfeita.';
+                confirmationModal.style.display = 'flex';
+                
+                confirmAction.onclick = () => {
+                    clearData();
+                    confirmationModal.style.display = 'none';
+                };
+            });
+            
+            // Cancel action in modal
+            cancelAction.addEventListener('click', () => {
+                confirmationModal.style.display = 'none';
+            });
+            
+            // Close modal when clicking outside
+            confirmationModal.addEventListener('click', (e) => {
+                if (e.target === confirmationModal) {
+                    confirmationModal.style.display = 'none';
+                }
+            });
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
