@@ -283,7 +283,7 @@ body {
     align-items: center;
     justify-content: center;
     background: none;
-    border: none;
+    border:none;
     font-size: 1.5rem;
     cursor: pointer;
     color: var(--text-color);
@@ -293,6 +293,9 @@ body {
     height: 40px;
     border-radius: 50%;
     transition: var(--transition);
+    font-size: 0.9em;
+    color: #2980b9;
+    font-weight: bolder;
 }
 
 .menu-toggle:hover {
