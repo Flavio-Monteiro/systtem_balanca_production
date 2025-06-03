@@ -842,3 +842,131 @@ table {
         margin-left: 0;
     }
 }
+
+
+
+/* Layout da seção de produtos */
+.product-management-container {
+    display: flex;
+    gap: 20px;
+    height: calc(100vh - 150px); /* Altura ajustável conforme necessário */
+}
+
+.product-form-container {
+    flex: 0 0 350px; /* Largura fixa para o formulário */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.product-form {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.search-container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.search-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.search-bar input {
+    flex-grow: 1;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.search-bar button {
+    padding: 10px 15px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.product-table-container {
+    flex: 1;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.table-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 15px;
+}
+
+/* Mantemos os estilos da tabela do exemplo anterior */
+#allProductsTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#allProductsTable th, 
+#allProductsTable td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+#allProductsTable th {
+    background-color: #f8f9fa;
+    font-weight: 500;
+    color: #2c3e50;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+#allProductsTable tr:hover {
+    background-color: #f5f5f5;
+}
+
+.actions-column {
+    width: 180px;
+}
+
+.action-btn {
+    padding: 8px 12px;
+    margin: 0 5px;
+    font-size: 14px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+}
+
+/* Responsividade */
+@media (max-width: 992px) {
+    .product-management-container {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .product-form-container {
+        flex: 1;
+    }
+    
+    .product-table-container {
+        flex: 1;
+    }
+}

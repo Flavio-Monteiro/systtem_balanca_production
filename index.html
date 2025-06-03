@@ -248,83 +248,74 @@
         </section>
 
         <!-- Seção Produtos (oculta inicialmente) -->
-        <section id="produtos" class="content-section">
-          <h1><i class="fas fa-bread-slice"></i> Gestão de Produtos</h1>
-
-          <div class="product-management">
+      <!-- Seção Produtos -->
+<section id="produtos" class="content-section">
+    <h1><i class="fas fa-bread-slice"></i> Gestão de Produtos</h1>
+    
+    <div class="product-management-container"> <!-- Novo container principal -->
+        <div class="product-form-container"> <!-- Container do formulário -->
             <div class="product-form">
-              <h2>Cadastrar/Editar Produto</h2>
-              <form id="productForm">
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="newProductCode">Código:</label>
-                    <input type="text" id="newProductCode" required />
-                  </div>
-                  <div class="form-group">
-                    <label for="newProductName">Nome:</label>
-                    <input type="text" id="newProductName" required />
-                  </div>
-                </div>
-
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="newProductPrice">Valor por kg (R$):</label>
-                    <input type="number" step="0.01" id="newProductPrice" />
-                  </div>
-                  <div class="form-group">
-                    <label for="newProductTara">Tara Padrão (kg):</label>
-                    <input type="number" step="0.001" id="newProductTara" />
-                  </div>
-                </div>
-
-                <div class="form-actions">
-                  <button type="submit" id="saveProductBtn">
-                    <i class="fas fa-save"></i> Salvar
-                  </button>
-                  <button type="button" id="updateProductBtn">
-                    <i class="fas fa-edit"></i> Atualizar
-                  </button>
-                  <button type="button" id="clearProductBtn">
-                    <i class="fas fa-broom"></i> Limpar
-                  </button>
-                </div>
-              </form>
+                <h2>Cadastrar/Editar Produto</h2>
+                <form id="productForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newProductCode">Código:</label>
+                            <input type="text" id="newProductCode" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newProductName">Nome:</label>
+                            <input type="text" id="newProductName" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newProductPrice">Valor por kg (R$):</label>
+                            <input type="number" step="0.01" id="newProductPrice">
+                        </div>
+                        <div class="form-group">
+                            <label for="newProductTara">Tara Padrão (kg):</label>
+                            <input type="number" step="0.001" id="newProductTara">
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" id="saveProductBtn"><i class="fas fa-save"></i> Salvar</button>
+                        <button type="button" id="updateProductBtn"><i class="fas fa-edit"></i> Atualizar</button>
+                        <button type="button" id="clearProductBtn"><i class="fas fa-broom"></i> Limpar</button>
+                    </div>
+                </form>
             </div>
-
-            <div class="product-list-full">
-              <h2>Todos os Produtos</h2>
-              <div class="search-bar">
-                <input
-                  type="text"
-                  id="searchAllProducts"
-                  placeholder="Buscar produto..."
-                />
-                <button id="searchProductBtn">
-                  <i class="fas fa-search"></i>
-                </button>
-              </div>
-
-              <div class="table-container">
-                <!-- Novo container para a tabela -->
+            
+            <div class="search-container">
+                <h3>Buscar Produtos</h3>
+                <div class="search-bar">
+                    <input type="text" id="searchAllProducts" placeholder="Buscar produto...">
+                    <button id="searchProductBtn"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="product-table-container"> <!-- Container da tabela -->
+            <div class="table-wrapper">
                 <table id="allProductsTable">
-                  <thead>
-                    <tr>
-                      <th>Código</th>
-                      <th>Nome</th>
-                      <th>Valor/kg</th>
-                      <th>Tara</th>
-                      <th class="actions-column">Ações</th>
-                      <!-- Classe adicional para coluna de ações -->
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <!-- Produtos serão carregados via JavaScript -->
-                  </tbody>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nome</th>
+                            <th>Valor/kg</th>
+                            <th>Tara</th>
+                            <th class="actions-column">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Produtos serão carregados via JavaScript -->
+                    </tbody>
                 </table>
-              </div>
             </div>
-          </div>
-        </section>
+        </div>
+    </div>
+</section>
 
         <!-- Seção Processos (oculta inicialmente) -->
         <section id="processos" class="content-section">
