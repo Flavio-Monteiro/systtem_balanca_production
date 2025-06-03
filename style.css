@@ -71,15 +71,17 @@
         .menu-toggle {
             display: none;
             position: fixed;
-            top: 10px;
+            top: 0px;
             left: 10px;
             background: #2c3e50;
             color: white;
             border: none;
-            padding: 10px;
+            padding: 0px;
             border-radius: 5px;
             z-index: 1000;
             cursor: pointer;
+            height: 60px;
+            margin: 0;
         }
 
         .logo {
@@ -197,7 +199,7 @@
         /* Conteúdo Principal */
         .main-content {
             flex-grow: 1;
-            padding: 20px;
+            padding: 0px;
             overflow-y: auto;
             transition: all 0.3s ease;
         }
@@ -215,14 +217,19 @@
         }
 
         h1 {
+            
             margin-bottom: 20px;
+            padding-top: 2.8em;
             color: #2c3e50;
             display: flex;
             align-items: center;
+            
+            
         }
 
         h1 i {
             margin-right: 10px;
+            padding: 10px;
         }
 
         /* Painel da Balança */
