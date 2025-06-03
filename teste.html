@@ -1,31 +1,916 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sistema de Balança - PadariaPlus</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Raleway:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&family=ZCOOL+XiaoWei&family=Zain:ital,wght@0,200;0,300;0,400;0,700;0,800;0,900;1,300;1,400&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+    <style>
+          :root {
+            /* Cores */
+            --primary: #4a6fa5;
+            --primary-hover: #3a5a8a;
+            --secondary: #6c757d;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --white: #ffffff;
+            
+            /* Espaçamentos */
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-xxl: 3rem;
+            
+            /* Bordas */
+            --border-radius: 0.375rem;
+            --border-color: #dee2e6;
+            
+            /* Sombras */
+            --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+            
+            /* Transições */
+            --transition: all 0.3s ease;
+            
+            /* Larguras */
+            --sidebar-width: 280px;
+            --sidebar-width-collapsed: 80px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Layout Principal */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+            transition: var(--transition);
+            padding-top: 60px; /* Espaço para o menu toggle em mobile */
+        }
+
+        /* Menu Lateral */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--dark);
+            color: var(--light);
+            padding: var(--space-md) 0;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 1000;
+            overflow-y: auto;
+            transform: translateX(-100%);
+        }
+
+        .sidebar.show {
+            transform: translateX(0);
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-width-collapsed);
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed .logo span,
+        .sidebar.collapsed .menu li span,
+        .sidebar.collapsed .product-search,
+        .sidebar.collapsed .product-list-container h3 {
+            display: none;
+        }
+
+        .sidebar.collapsed .logo {
+            justify-content: center;
+            padding: var(--space-md);
+        }
+
+        .sidebar.collapsed .menu li {
+            justify-content: center;
+            padding: var(--space-md);
+        }
+
+        .sidebar.collapsed .menu li i {
+            margin-right: 0;
+        }
+
+        .menu-toggle {
+            display: flex;
+            position: fixed;
+            top: var(--space-md);
+            left: var(--space-md);
+            background: var(--dark);
+            color: var(--white);
+            border: none;
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--border-radius);
+            z-index: 1100;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .menu-toggle i {
+            margin-right: var(--space-xs);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            padding: 0 var(--space-md) var(--space-md);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: var(--space-md);
+            transition: var(--transition);
+        }
+
+        .logo i {
+            font-size: 1.5rem;
+            margin-right: var(--space-sm);
+        }
+
+        .logo span {
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .menu ul {
+            list-style: none;
+            padding: 0 var(--space-sm);
+        }
+
+        .menu li {
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--border-radius);
+            margin-bottom: var(--space-xs);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .menu li:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .menu li.active {
+            background-color: var(--primary);
+        }
+
+        .menu li i {
+            margin-right: var(--space-sm);
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .menu li span {
+            flex-grow: 1;
+            transition: var(--transition);
+            font-size: 0.95rem;
+        }
+
+        .product-search {
+            padding: var(--space-md);
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .product-search input {
+            width: 100%;
+            padding: var(--space-sm) var(--space-md) var(--space-sm) 2.5rem;
+            border-radius: var(--border-radius);
+            border: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .product-search input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .product-search i {
+            position: absolute;
+            left: 1.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+
+        .product-list-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 0 var(--space-sm);
+            transition: var(--transition);
+        }
+
+        .product-list-container h3 {
+            text-align: center;
+            margin-bottom: var(--space-sm);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+            font-size: 0.95rem;
+        }
+
+        .product-list {
+            max-height: calc(100vh - 350px);
+            overflow-y: auto;
+        }
+
+        .product-item {
+            padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-md);
+            margin-bottom: var(--space-xs);
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-item:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .product-code {
+            font-weight: 500;
+            color: var(--primary);
+            font-size: 0.85rem;
+            margin-bottom: 2px;
+        }
+
+        .product-name {
+            font-size: 0.85rem;
+            color: var(--light);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Conteúdo Principal */
+        .main-content {
+            flex-grow: 1;
+            padding: var(--space-md);
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: var(--space-lg);
+            color: var(--dark);
+            flex-wrap: wrap;
+        }
+
+        .section-header i {
+            margin-right: var(--space-sm);
+            background-color: var(--primary);
+            color: var(--white);
+            padding: var(--space-sm);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .section-header h1 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-right: var(--space-md);
+        }
+
+        /* Cards e Painéis */
+        .card {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: var(--space-md);
+        }
+
+        .card-header h2 {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--dark);
+            margin-right: var(--space-sm);
+        }
+
+        /* Display da Balança */
+        .balance-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .display-card {
+            flex: 1 1 100%;
+            min-width: 0;
+            background-color: var(--dark);
+            border-radius: var(--border-radius);
+            padding: var(--space-md);
+            text-align: center;
+            color: var(--white);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .display-card h3 {
+            font-size: 0.9rem;
+            margin-bottom: var(--space-sm);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .display-card p {
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+
+        /* Formulários */
+        .form-group {
+            margin-bottom: var(--space-md);
+            width: 100%;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
+            width: 100%;
+        }
+
+        .form-row .form-group {
+            flex: 1 1 100%;
+            margin-bottom: 0;
+            min-width: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: var(--space-xs);
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: var(--space-sm) var(--space-md);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(74, 111, 165, 0.25);
+        }
+
+        .input-group {
+            display: flex;
+            width: 100%;
+        }
+
+        .input-group input {
+            flex-grow: 1;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            min-width: 0;
+        }
+
+        .input-group button {
+            padding: 0 var(--space-md);
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            border-top-right-radius: var(--border-radius);
+            border-bottom-right-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .input-group button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .form-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            margin-top: var(--space-md);
+            width: 100%;
+        }
+
+        /* Botões */
+        .btn {
+            padding: var(--space-sm) var(--space-md);
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .btn i {
+            margin-right: var(--space-xs);
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: var(--white);
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            color: var(--white);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: var(--white);
+        }
+
+        .btn-info {
+            background-color: var(--info);
+            color: var(--white);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--white);
+        }
+
+        .btn-sm {
+            padding: var(--space-xs) var(--space-sm);
+            font-size: 0.8rem;
+        }
+
+        .btn-block {
+            display: flex;
+            width: 100%;
+        }
+
+        /* Tabelas */
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: var(--space-md);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        th, td {
+            padding: var(--space-sm) var(--space-md);
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.85rem;
+        }
+
+        th {
+            background-color: var(--light);
+            font-weight: 500;
+            color: var(--dark);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        /* Abas */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: var(--space-md);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tab-btn {
+            padding: var(--space-sm) var(--space-md);
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--secondary);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+            font-size: 0.9rem;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+            width: 100%;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Resultados de Processos */
+        .process-results {
+            background-color: var(--light);
+            border-radius: var(--border-radius);
+            padding: var(--space-md);
+            margin-top: var(--space-md);
+            width: 100%;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+            font-size: 0.95rem;
+            flex-wrap: wrap;
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-item span:first-child {
+            margin-right: var(--space-md);
+        }
+
+        .result-item span:last-child {
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        /* Gráficos */
+        .charts-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+            margin-top: var(--space-md);
+            width: 100%;
+        }
+
+        .chart-wrapper {
+            flex: 1 1 100%;
+            min-width: 0;
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            padding: var(--space-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .chart-wrapper canvas {
+            width: 100% !important;
+            height: auto !important;
+            min-height: 250px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+            padding: var(--space-md);
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            padding: var(--space-md);
+            border-radius: var(--border-radius);
+            width: 100%;
+            max-width: 500px;
+            box-shadow: var(--shadow-lg);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            margin-bottom: var(--space-md);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-header h3 {
+            font-size: 1.25rem;
+            color: var(--dark);
+        }
+
+        .modal-body {
+            margin-bottom: var(--space-md);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-sm);
+            flex-wrap: wrap;
+        }
+
+        /* Notificação */
+        .notification {
+            position: fixed;
+            bottom: var(--space-md);
+            right: var(--space-md);
+            padding: var(--space-sm) var(--space-md);
+            background-color: var(--success);
+            color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            max-width: calc(100% - var(--space-md) * 2);
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .notification.error {
+            background-color: var(--danger);
+        }
+
+        .notification.warning {
+            background-color: var(--warning);
+        }
+
+        .notification i {
+            margin-right: var(--space-sm);
+        }
+
+        .notification span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Animações */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        /* Utilitários */
+        .text-center {
+            text-align: center;
+        }
+
+        .text-muted {
+            color: var(--secondary);
+        }
+
+        .p-1 { padding: var(--space-xs); }
+        .p-2 { padding: var(--space-sm); }
+        .p-3 { padding: var(--space-md); }
+        .p-4 { padding: var(--space-lg); }
+        .p-5 { padding: var(--space-xl); }
+
+        .mt-1 { margin-top: var(--space-xs); }
+        .mt-2 { margin-top: var(--space-sm); }
+        .mt-3 { margin-top: var(--space-md); }
+        .mt-4 { margin-top: var(--space-lg); }
+        .mt-5 { margin-top: var(--space-xl); }
+
+        .mb-1 { margin-bottom: var(--space-xs); }
+        .mb-2 { margin-bottom: var(--space-sm); }
+        .mb-3 { margin-bottom: var(--space-md); }
+        .mb-4 { margin-bottom: var(--space-lg); }
+        .mb-5 { margin-bottom: var(--space-xl); }
+
+        .w-100 { width: 100%; }
+
+        /* Responsividade */
+        @media (min-width: 576px) {
+            .display-card {
+                flex: 1 1 calc(50% - var(--space-md));
+            }
+            
+            .form-row .form-group {
+                flex: 1 1 calc(50% - var(--space-md));
+            }
+            
+            .chart-wrapper {
+                flex: 1 1 calc(50% - var(--space-md));
+            }
+        }
+
+        @media (min-width: 768px) {
+            .app-container {
+                padding-top: 0;
+            }
+            
+            .sidebar {
+                transform: translateX(0);
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+            }
+            
+            .main-content {
+                margin-left: var(--sidebar-width);
+            }
+            
+            .menu-toggle {
+                display: none;
+            }
+            
+            .display-card {
+                flex: 1 1 calc(50% - var(--space-md));
+            }
+            
+            .form-actions {
+                flex-wrap: nowrap;
+            }
+            
+            .btn {
+                width: auto;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .display-card {
+                flex: 1 1 calc(33.333% - var(--space-md));
+            }
+            
+            .form-row .form-group {
+                flex: 1 1 calc(33.333% - var(--space-md));
+            }
+            
+            .sidebar.collapsed + .main-content {
+                margin-left: var(--sidebar-width-collapsed);
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .main-content {
+                padding: var(--space-lg);
+            }
+            
+            .card {
+                padding: var(--space-lg);
+            }
+        }
+
+        /* Ajustes para telas muito pequenas */
+        @media (max-width: 360px) {
+            .section-header h1 {
+                font-size: 1.3rem;
+            }
+            
+            .card-header h2 {
+                font-size: 1.1rem;
+            }
+            
+            .btn i {
+                margin-right: 0;
+            }
+            
+            .btn span {
+                display: none;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <button class="menu-toggle" id="menuToggle">
-        <i class="fas fa-bars"></i>
+    <button class="menu-toggle btn btn-primary" id="menuToggle">
+        <i class="fas fa-bars"></i> <span>Menu</span>
     </button>
 
-    <div class="container">
+    <div class="app-container">
         <!-- Menu Lateral -->
         <aside class="sidebar" id="sidebar">
             <div class="logo">
                 <i class="fas fa-balance-scale"></i>
                 <span>PadariaPlus</span>
             </div>
-            
+
             <nav class="menu">
                 <ul>
                     <li class="active" data-section="balanca">
@@ -50,12 +935,12 @@
                     </li>
                 </ul>
             </nav>
-            
+
             <div class="product-search">
-                <input type="text" id="searchProduct" placeholder="Buscar produto...">
+                <input type="text" id="searchProduct" placeholder="Buscar produto..." />
                 <i class="fas fa-search"></i>
             </div>
-            
+
             <div class="product-list-container">
                 <h3>Lista de Produtos</h3>
                 <div class="product-list" id="productList">
@@ -68,10 +953,13 @@
         <main class="main-content" id="mainContent">
             <!-- Seção Balança (padrão) -->
             <section id="balanca" class="content-section active">
-                <h1><i class="fas fa-weight"></i> Balança de Vendas</h1>
-                
-                <div class="balance-panel">
-                    <div class="display">
+                <div class="section-header">
+                    <i class="fas fa-weight"></i>
+                    <h1>Balança de Vendas</h1>
+                </div>
+
+                <div class="card">
+                    <div class="balance-display">
                         <div class="display-card">
                             <h3>VALOR TOTAL</h3>
                             <p id="valorTotalDisplay">R$ 0,00</p>
@@ -81,23 +969,29 @@
                             <p id="pesoLiquidoDisplay">0.000 kg</p>
                         </div>
                     </div>
-                    
+
                     <form id="balanceForm">
                         <div class="form-group">
                             <label for="productCode">Código do Produto:</label>
-                            <div class="input-with-button">
-                                <input type="text" id="productCode" placeholder="Ex: 4251">
-                                <button type="button" id="searchByCode"><i class="fas fa-search"></i> Buscar</button>
+                            <div class="input-group">
+                                <input type="text" id="productCode" placeholder="Ex: 4251" />
+                                <button type="button" id="searchByCode" class="btn btn-primary">
+                                    <i class="fas fa-search"></i>
+                                </button>
                             </div>
-                            <div class="product-info" id="productInfo">Ex: 4251 - Pão Francês</div>
+                            <div class="text-muted mt-1" id="productInfo">
+                                Ex: 4251 - Pão Francês
+                            </div>
                         </div>
-                        
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="tara">Tara (kg):</label>
-                                <div class="input-with-button">
-                                    <input type="number" step="0.001" id="tara" placeholder="0.000">
-                                    <button type="button" id="resetTara"><i class="fas fa-undo"></i> Resetar</button>
+                                <div class="input-group">
+                                    <input type="number" step="0.001" id="tara" placeholder="0.000" />
+                                    <button type="button" id="resetTara" class="btn btn-primary">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -109,141 +1003,168 @@
                                 </select>
                             </div>
                         </div>
-                        
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="productName">Produto:</label>
-                                <input type="text" id="productName" readonly>
+                                <input type="text" id="productName" readonly />
                             </div>
                             <div class="form-group">
                                 <label for="pricePerKg">Valor por kg (R$):</label>
-                                <div class="input-with-button">
-                                    <input type="number" step="0.01" id="pricePerKg" placeholder="0,00">
-                                    <button type="button" id="resetPrice"><i class="fas fa-undo"></i> Resetar</button>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" id="pricePerKg" placeholder="0,00" />
+                                    <button type="button" id="resetPrice" class="btn btn-primary">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="weight">Peso (kg):</label>
-                                <input type="number" step="0.001" id="weight" placeholder="0.000">
+                                <input type="number" step="0.001" id="weight" placeholder="0.000" />
                             </div>
                             <div class="form-group">
                                 <label for="employee">Funcionário:</label>
-                                <input type="text" id="employee" placeholder="Nome do funcionário">
+                                <input type="text" id="employee" placeholder="Nome do funcionário" />
                             </div>
                         </div>
-                        
+
                         <div class="form-actions">
-                            <button type="button" id="calculateBtn"><i class="fas fa-calculator"></i> Calcular</button>
-                            <button type="button" id="registerBtn"><i class="fas fa-save"></i> Registrar</button>
-                            <button type="button" id="clearBtn"><i class="fas fa-broom"></i> Limpar</button>
+                            <button type="button" id="calculateBtn" class="btn btn-primary">
+                                <i class="fas fa-calculator"></i> Calcular
+                            </button>
+                            <button type="button" id="registerBtn" class="btn btn-success">
+                                <i class="fas fa-save"></i> Registrar
+                            </button>
+                            <button type="button" id="clearBtn" class="btn btn-warning">
+                                <i class="fas fa-broom"></i> Limpar
+                            </button>
                         </div>
                     </form>
                 </div>
-                
-                <div class="records-section">
-                    <h2><i class="fas fa-history"></i> Histórico de Pesagens</h2>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-history"></i> Histórico de Pesagens</h2>
+                    </div>
+                    
                     <div class="tabs">
-                        <button class="tab-btn active" data-tab="control">Controle</button>
+                        <button class="tab-btn active" data-tab="control">
+                            Controle
+                        </button>
                         <button class="tab-btn" data-tab="loss">Perdas/Quebras</button>
                     </div>
-                    
+
                     <div class="tab-content active" id="controlTab">
-                        <table id="controlTable">
-                            <thead>
-                                <tr>
-                                    <th>Data/Hora</th>
-                                    <th>Funcionário</th>
-                                    <th>Produto</th>
-                                    <th>Código</th>
-                                    <th>Peso Bruto</th>
-                                    <th>Tara</th>
-                                    <th>Peso Líquido</th>
-                                    <th>Valor</th>
-                                    <th>Ações</th>
-                                    <th>
-                                    <button class="action-btn generate-report-btn" id="generateWeighingReportBtn">
-                                        <i class="fas fa-file-alt"></i> Gerar Relatório
-                                    </button>
-                                </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Registros serão adicionados via JavaScript -->
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table id="controlTable">
+                                <thead>
+                                    <tr>
+                                        <th>Data/Hora</th>
+                                        <th>Funcionário</th>
+                                        <th>Produto</th>
+                                        <th>Código</th>
+                                        <th>Peso Bruto</th>
+                                        <th>Tara</th>
+                                        <th>Peso Líquido</th>
+                                        <th>Valor</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Registros serão adicionados via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    
+
                     <div class="tab-content" id="lossTab">
-                        <table id="lossTable">
-                            <thead>
-                                <tr>
-                                    <th>Data/Hora</th>
-                                    <th>Funcionário</th>
-                                    <th>Produto</th>
-                                    <th>Código</th>
-                                    <th>Peso Bruto</th>
-                                    <th>Tara</th>
-                                    <th>Peso Líquido</th>
-                                    <th>Valor</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Registros serão adicionados via JavaScript -->
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table id="lossTable">
+                                <thead>
+                                    <tr>
+                                        <th>Data/Hora</th>
+                                        <th>Funcionário</th>
+                                        <th>Produto</th>
+                                        <th>Código</th>
+                                        <th>Peso Bruto</th>
+                                        <th>Tara</th>
+                                        <th>Peso Líquido</th>
+                                        <th>Valor</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Registros serão adicionados via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </section>
-            
-            <!-- Seção Produtos (oculta inicialmente) -->
+
+            <!-- Seção Produtos -->
             <section id="produtos" class="content-section">
-                <h1><i class="fas fa-bread-slice"></i> Gestão de Produtos</h1>
-                
-                <div class="product-management">
-                    <div class="product-form">
+                <div class="section-header">
+                    <i class="fas fa-bread-slice"></i>
+                    <h1>Gestão de Produtos</h1>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
                         <h2>Cadastrar/Editar Produto</h2>
-                        <form id="productForm">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="newProductCode">Código:</label>
-                                    <input type="text" id="newProductCode" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="newProductName">Nome:</label>
-                                    <input type="text" id="newProductName" required>
-                                </div>
+                    </div>
+                    <form id="productForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="newProductCode">Código:</label>
+                                <input type="text" id="newProductCode" required />
                             </div>
-                            
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="newProductPrice">Valor por kg (R$):</label>
-                                    <input type="number" step="0.01" id="newProductPrice">
-                                </div>
-                                <div class="form-group">
-                                    <label for="newProductTara">Tara Padrão (kg):</label>
-                                    <input type="number" step="0.001" id="newProductTara">
-                                </div>
+                            <div class="form-group">
+                                <label for="newProductName">Nome:</label>
+                                <input type="text" id="newProductName" required />
                             </div>
-                            
-                            <div class="form-actions">
-                                <button type="submit" id="saveProductBtn"><i class="fas fa-save"></i> Salvar</button>
-                                <button type="button" id="updateProductBtn"><i class="fas fa-edit"></i> Atualizar</button>
-                                <button type="button" id="clearProductBtn"><i class="fas fa-broom"></i> Limpar</button>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="newProductPrice">Valor por kg (R$):</label>
+                                <input type="number" step="0.01" id="newProductPrice" />
                             </div>
-                        </form>
+                            <div class="form-group">
+                                <label for="newProductTara">Tara Padrão (kg):</label>
+                                <input type="number" step="0.001" id="newProductTara" />
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" id="saveProductBtn" class="btn btn-success">
+                                <i class="fas fa-save"></i> Salvar
+                            </button>
+                            <button type="button" id="updateProductBtn" class="btn btn-primary">
+                                <i class="fas fa-edit"></i> Atualizar
+                            </button>
+                            <button type="button" id="clearProductBtn" class="btn btn-warning">
+                                <i class="fas fa-broom"></i> Limpar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Lista de Produtos</h2>
+                        <div class="input-group" style="width: 300px;">
+                            <input type="text" id="searchAllProducts" placeholder="Buscar produto..." />
+                            <button id="searchProductBtn" class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
                     </div>
                     
-                    <div class="product-list-full">
-                        <h2>Todos os Produtos</h2>
-                        <div class="search-bar">
-                            <input type="text" id="searchAllProducts" placeholder="Buscar produto...">
-                            <button id="searchProductBtn"><i class="fas fa-search"></i></button>
-                        </div>
-                        
+                    <div class="table-responsive">
                         <table id="allProductsTable">
                             <thead>
                                 <tr>
@@ -261,37 +1182,42 @@
                     </div>
                 </div>
             </section>
-            
-            <!-- Seção Processos (oculta inicialmente) -->
+
+            <!-- Seção Processos -->
             <section id="processos" class="content-section">
-                <h1><i class="fas fa-cogs"></i> Gestão de Processos</h1>
-                
-                <div class="process-management">
-                    <div class="process-control">
+                <div class="section-header">
+                    <i class="fas fa-cogs"></i>
+                    <h1>Gestão de Processos</h1>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
                         <h2>Controle de Sobras e Quebras</h2>
-                        
+                    </div>
+                    
+                    <form id="processForm">
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="processProductCode">Código do Produto:</label>
-                                <input type="text" id="processProductCode" placeholder="Ex: 4251">
+                                <input type="text" id="processProductCode" placeholder="Ex: 4251" />
                             </div>
                             <div class="form-group">
                                 <label for="processProductName">Produto:</label>
-                                <input type="text" id="processProductName" readonly>
+                                <input type="text" id="processProductName" readonly />
                             </div>
                         </div>
-                        
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="originalWeight">Peso Original (kg):</label>
-                                <input type="number" step="0.001" id="originalWeight">
+                                <input type="number" step="0.001" id="originalWeight" />
                             </div>
                             <div class="form-group">
                                 <label for="remainingWeight">Peso Restante (kg):</label>
-                                <input type="number" step="0.001" id="remainingWeight">
+                                <input type="number" step="0.001" id="remainingWeight" />
                             </div>
                         </div>
-                        
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="processType">Tipo de Processo:</label>
@@ -303,15 +1229,19 @@
                             </div>
                             <div class="form-group">
                                 <label for="processEmployee">Funcionário:</label>
-                                <input type="text" id="processEmployee" placeholder="Nome do funcionário">
+                                <input type="text" id="processEmployee" placeholder="Nome do funcionário" />
                             </div>
                         </div>
-                        
+
                         <div class="form-actions">
-                            <button type="button" id="calculateProcessBtn"><i class="fas fa-calculator"></i> Calcular Diferença</button>
-                            <button type="button" id="registerProcessBtn"><i class="fas fa-save"></i> Registrar</button>
+                            <button type="button" id="calculateProcessBtn" class="btn btn-primary">
+                                <i class="fas fa-calculator"></i> Calcular Diferença
+                            </button>
+                            <button type="button" id="registerProcessBtn" class="btn btn-success">
+                                <i class="fas fa-save"></i> Registrar
+                            </button>
                         </div>
-                        
+
                         <div class="process-results">
                             <h3>Resultados:</h3>
                             <div class="result-item">
@@ -327,10 +1257,15 @@
                                 <span id="costImpact">0.00%</span>
                             </div>
                         </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Histórico de Processos</h2>
                     </div>
                     
-                    <div class="process-history">
-                        <h2>Histórico de Processos</h2>
+                    <div class="table-responsive">
                         <table id="processHistoryTable">
                             <thead>
                                 <tr>
@@ -351,15 +1286,20 @@
                     </div>
                 </div>
             </section>
-            
-            <!-- Seção Relatórios (oculta inicialmente) -->
+
+            <!-- Seção Relatórios -->
             <section id="relatorios" class="content-section">
-                <h1><i class="fas fa-chart-bar"></i> Relatórios</h1>
-                
-                <div class="reports-section">
-                    <div class="report-filters">
+                <div class="section-header">
+                    <i class="fas fa-chart-bar"></i>
+                    <h1>Relatórios</h1>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
                         <h2>Gerar Relatório</h2>
-                        
+                    </div>
+                    
+                    <form id="reportForm">
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="reportType">Tipo de Relatório:</label>
@@ -378,100 +1318,137 @@
                                 </select>
                             </div>
                         </div>
-                        
-                        <div class="form-row" id="customDateRange">
+
+                        <div class="form-row" id="customDateRange" style="display: none;">
                             <div class="form-group">
                                 <label for="startDate">Data Início:</label>
-                                <input type="date" id="startDate">
+                                <input type="date" id="startDate" />
                             </div>
                             <div class="form-group">
                                 <label for="endDate">Data Fim:</label>
-                                <input type="date" id="endDate">
+                                <input type="date" id="endDate" />
                             </div>
                         </div>
-                        
+
                         <div class="form-actions">
-                            <button type="button" id="generateReportBtn"><i class="fas fa-file-pdf"></i> Gerar PDF</button>
-                            <button type="button" id="exportCSVBtn"><i class="fas fa-file-csv"></i> Exportar CSV</button>
-                            <button type="button" id="exportExcelBtn"><i class="fas fa-file-excel"></i> Exportar Excel</button>
+                            <button type="button" id="generateReportBtn" class="btn btn-primary">
+                                <i class="fas fa-file-pdf"></i> Gerar PDF
+                            </button>
+                            <button type="button" id="exportCSVBtn" class="btn btn-success">
+                                <i class="fas fa-file-csv"></i> Exportar CSV
+                            </button>
+                            <button type="button" id="exportExcelBtn" class="btn btn-success">
+                                <i class="fas fa-file-excel"></i> Exportar Excel
+                            </button>
                         </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Pré-visualização</h2>
                     </div>
                     
-                    <div class="report-preview">
-                        <h2>Pré-visualização</h2>
-                        <div class="report-content" id="reportPreview">
+                    <div class="card-body">
+                        <div id="reportPreview" class="p-3">
                             <!-- Conteúdo do relatório será gerado via JavaScript -->
                         </div>
-                        
-                        <div class="charts">
-                            <canvas id="salesChart"></canvas>
-                            <canvas id="lossesChart"></canvas>
+
+                        <div class="charts-container">
+                            <div class="chart-wrapper">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="lossesChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
-            
-            <!-- Seção Configurações (oculta inicialmente) -->
+
+            <!-- Seção Configurações -->
             <section id="configuracoes" class="content-section">
-                <h1><i class="fas fa-tools"></i> Configurações</h1>
-                
-                <div class="settings-section">
-                    <div class="settings-form">
+                <div class="section-header">
+                    <i class="fas fa-tools"></i>
+                    <h1>Configurações</h1>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
                         <h2>Configurações do Sistema</h2>
-                        
-                        <div class="form-group">
-                            <label for="decimalPrecision">Casas decimais para peso:</label>
-                            <select id="decimalPrecision">
-                                <option value="1">1 (0.0)</option>
-                                <option value="2" selected>2 (0.00)</option>
-                                <option value="3">3 (0.000)</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="currencySymbol">Símbolo monetário:</label>
-                            <input type="text" id="currencySymbol" value="R$">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="thousandSeparator">Separador de milhar:</label>
-                            <input type="text" id="thousandSeparator" value=".">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="decimalSeparator">Separador decimal:</label>
-                            <input type="text" id="decimalSeparator" value=",">
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="button" id="saveSettingsBtn"><i class="fas fa-save"></i> Salvar Configurações</button>
-                        </div>
                     </div>
                     
-                    <div class="data-management">
-                        <h2>Gerenciamento de Dados</h2>
-                        
+                    <form id="settingsForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="decimalPrecision">Casas decimais para peso:</label>
+                                <select id="decimalPrecision">
+                                    <option value="1">1 (0.0)</option>
+                                    <option value="2" selected>2 (0.00)</option>
+                                    <option value="3">3 (0.000)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="currencySymbol">Símbolo monetário:</label>
+                                <input type="text" id="currencySymbol" value="R$" />
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="thousandSeparator">Separador de milhar:</label>
+                                <input type="text" id="thousandSeparator" value="." />
+                            </div>
+                            <div class="form-group">
+                                <label for="decimalSeparator">Separador decimal:</label>
+                                <input type="text" id="decimalSeparator" value="," />
+                            </div>
+                        </div>
+
                         <div class="form-actions">
-                            <button type="button" id="backupDataBtn"><i class="fas fa-download"></i> Fazer Backup</button>
-                            <button type="button" id="restoreDataBtn"><i class="fas fa-upload"></i> Restaurar Backup</button>
-                            <button type="button" id="clearAllDataBtn" class="danger"><i class="fas fa-trash"></i> Limpar Todos os Dados</button>
+                            <button type="button" id="saveSettingsBtn" class="btn btn-success">
+                                <i class="fas fa-save"></i> Salvar Configurações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Gerenciamento de Dados</h2>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" id="backupDataBtn" class="btn btn-primary">
+                            <i class="fas fa-download"></i> Fazer Backup
+                        </button>
+                        <button type="button" id="restoreDataBtn" class="btn btn-info">
+                            <i class="fas fa-upload"></i> Restaurar Backup
+                        </button>
+                        <button type="button" id="clearAllDataBtn" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Limpar Todos os Dados
+                        </button>
+                    </div>
+
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h2>Informações do Sistema</h2>
                         </div>
                         
-                        <div class="info-box">
-                            <h3>Informações do Sistema</h3>
-                            <div class="info-item">
+                        <div class="card-body">
+                            <div class="result-item">
                                 <span>Total de Produtos:</span>
                                 <span id="totalProducts">0</span>
                             </div>
-                            <div class="info-item">
+                            <div class="result-item">
                                 <span>Total de Pesagens:</span>
                                 <span id="totalWeighings">0</span>
                             </div>
-                            <div class="info-item">
+                            <div class="result-item">
                                 <span>Total de Processos:</span>
                                 <span id="totalProcesses">0</span>
                             </div>
-                            <div class="info-item">
+                            <div class="result-item">
                                 <span>Último Backup:</span>
                                 <span id="lastBackup">Nenhum</span>
                             </div>
@@ -485,20 +1462,1917 @@
     <!-- Modal de Confirmação -->
     <div class="modal" id="confirmationModal">
         <div class="modal-content">
-            <h3 id="modalTitle">Confirmação</h3>
-            <p id="modalMessage">Tem certeza que deseja realizar esta ação?</p>
-            <div class="modal-actions">
-                <button id="modalConfirmBtn">Confirmar</button>
-                <button id="modalCancelBtn">Cancelar</button>
+            <div class="modal-header">
+                <h3 id="modalTitle">Confirmação</h3>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage">Tem certeza que deseja realizar esta ação?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="modalCancelBtn" class="btn btn-secondary">Cancelar</button>
+                <button id="modalConfirmBtn" class="btn btn-danger">Confirmar</button>
             </div>
         </div>
     </div>
 
     <!-- Notificação -->
     <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
         <span id="notificationMessage"></span>
     </div>
 
-  
+    <script>
+        // Banco de dados de produtos padrão
+        const defaultProducts = {
+            "1096": { "nome": "BEIJINHO" },
+            "17834": { "nome": "BISCOITO CACETINHO" },
+            "5913": { "nome": "BISCOITO CHAMPAGNE" },
+            "3056": { "nome": "BOLACHA CAMELO" },
+            "7481": { "nome": "BOLACHA DE COCO" },
+            "7207": { "nome": "BOLACHA MIMOSA" },
+            "2566": { "nome": "BOLACHA REG INTEGRAL" },
+            "7214": { "nome": "BOLACHA REGALIA" },
+            "7153": { "nome": "BOLACHA ROSQUINHA" },
+            "9300": { "nome": "BOLINHO DE BACALHAU" },
+            "9324": { "nome": "BOLINHO DE CHARQUE" },
+            "4724": { "nome": "BOLINHO DE PIZZA" },
+            "9331": { "nome": "BOLINHO DE QUEIJO" },
+            "17874": { "nome": "BOLO AIPIM KG" },
+            "73309": { "nome": "BOLO BACIA C/1 UN" },
+            "73305": { "nome": "BOLO BACIA C/4 UN" },
+            "17870": { "nome": "BOLO CAÇAROLA C/QUEIJO" },
+            "1427": { "nome": "BOLO CENOURA" },
+            "17320": { "nome": "BOLO CENOURA SIMPLES" },
+            "17295": { "nome": "BOLO CHOC CREMOSO" },
+            "6927": { "nome": "BOLO COM LARANJA" },
+            "1001": { "nome": "BOLO COM PASSAS" },
+            "9751": { "nome": "BOLO DE ABACAXI" },
+            "7085": { "nome": "BOLO DE AMENDOIM" },
+            "9492": { "nome": "BOLO DE BANANA" },
+            "7450": { "nome": "BOLO DE CHOCOLATE" },
+            "7016": { "nome": "BOLO DE COCADA" },
+            "3674": { "nome": "BOLO DE FRUTAS VERMELHAS" },
+            "6293": { "nome": "BOLO DE MACAXEIRA" },
+            "6347": { "nome": "BOLO DE MASSA PUBA" },
+            "6361": { "nome": "BOLO DE MILHO" },
+            "6198": { "nome": "BOLO FORMIGUEIRO" },
+            "6149": { "nome": "BOLO GOIABADA" },
+            "2300": { "nome": "BOLO INDIANO" },
+            "6217": { "nome": "BOLO INGLES" },
+            "6088": { "nome": "BOLO MASSA PUBA" },
+            "7177": { "nome": "BOLO MESCLADO" },
+            "7108": { "nome": "BOLO PÉ DE MOLEQUE PAÇOCA" },
+            "3063": { "nome": "BRASILEIRA" },
+            "1070": { "nome": "BRIGADEIRO" },
+            "4121": { "nome": "BRIOCHE COM CÔCO" },
+            "4145": { "nome": "BRIOCHE COM FRUTAS" },
+            "6095": { "nome": "BRIOCHE CREME CHOC" },
+            "6514": { "nome": "BROA DA CASA" },
+            "8174": { "nome": "CAROLINA" },
+            "9851": { "nome": "COXINHA CATUPIRY" },
+            "5227": { "nome": "COXINHA DE CARNE" },
+            "9837": { "nome": "COXINHA DE FRANGO" },
+            "1695": { "nome": "DELICIA DE ABACAXI" },
+            "6000": { "nome": "DIPLOMATA" },
+            "1020": { "nome": "DOCE MARIA MOLE" },
+            "3410": { "nome": "DOCINHO" },
+            "998949": { "nome": "EMPADA" },
+            "8419": { "nome": "ENROLADINHO" },
+            "6613": { "nome": "FARINHA DE ROSCA" },
+            "1823": { "nome": "FOCACCIA" },
+            "9913": { "nome": "FOLHADO DE FRANGO" },
+            "6965": { "nome": "GALETO" },
+            "596": { "nome": "KIELZ" },
+            "6615": { "nome": "MINI COXINHA" },
+            "953": { "nome": "MINI CROISSANT" },
+            "1631": { "nome": "MOUSSE DE CHOCOLATE" },
+            "1488": { "nome": "MOUSSE DE MARACUJA" },
+            "3346": { "nome": "MOUSSE DE MORANGO" },
+            "4144": { "nome": "PAINETTOME CINCO LATE" },
+            "6873": { "nome": "PÃO BAGUETE" },
+            "9690": { "nome": "PÃO BATATA" },
+            "7078": { "nome": "PÃO BOLACHÃO" },
+            "17864": { "nome": "PÃO BRIOCHE" },
+            "20139": { "nome": "PÃO DE ALHO" },
+            "7030": { "nome": "PÃO DE FORMA" },
+            "21933": { "nome": "PÃO DE LEITE" },
+            "34083": { "nome": "PÃO DE MILHO COQU" },
+            "7115": { "nome": "PÃO DE QUEIJO" },
+            "7496": { "nome": "PÃO DELICIA" },
+            "949": { "nome": "PÃO DOCE" },
+            "4251": { "nome": "PÃO FRANCÊS" },
+            "3822": { "nome": "PÃO HAMBÚRGUER" },
+            "3073": { "nome": "PÃO HAMBÚRGUER GERGELIM" },
+            "3957": { "nome": "PÃO HOT DOG RECHEADO" },
+            "7092": { "nome": "PÃO INTEGRAL" },
+            "6835": { "nome": "PÃO ITALIANO" },
+            "6316": { "nome": "PÃO MANTEIGA" },
+            "21931": { "nome": "PÃO PORTUGUÊS" },
+            "7122": { "nome": "PÃO RECIFE" },
+            "9317": { "nome": "PÃO SALADA RUSSA" },
+            "1984": { "nome": "PASTEL DE PORNAS" },
+            "9713": { "nome": "PETIT-FOUR DE COMBA" },
+            "4985": { "nome": "PIZZA SABORES" },
+            "7061": { "nome": "PUDIM" },
+            "9157": { "nome": "ROCAMBOLE" },
+            "6989": { "nome": "SALGADINHO DE QUEIJO" },
+            "1023": { "nome": "SANDUICHE NATURAL" },
+            "408": { "nome": "SOBREMESA" },
+            "7893": { "nome": "SUSPINO" },
+            "8648": { "nome": "TORRADA DE BOLO" },
+            "6781": { "nome": "TORRADA SIMPLES" },
+            "1441": { "nome": "TORTA DE ABACAXI" },
+            "7160": { "nome": "TORTA DE BANANA" },
+            "7054": { "nome": "TORTA DE CHOCOLATE" },
+            "1821": { "nome": "TORTA DE MARACUJA" },
+            "6491": { "nome": "TORTA DE MORANGO" },
+            "1907": { "nome": "TORTA DOCE DE LEITE" },
+            "1785": { "nome": "TORTA HOLANDESA" },
+            "6422": { "nome": "TORTA LEITE CONDENS" },
+            "1549": { "nome": "TORTA MOUSSE DE LIMAO" },
+            "69231": { "nome": "TORTA SABORES" },
+            "5104": { "nome": "TORTA SALGADA" },
+            "8485": { "nome": "TORTILETE" },
+            "34096": { "nome": "TORTILLE" }
+        };
+
+        // Configurações iniciais
+        const defaultSettings = {
+            decimalPrecision: 3,
+            currencySymbol: "R$",
+            thousandSeparator: ".",
+            decimalSeparator: ","
+        };
+
+        // Estado do aplicativo
+        const appState = {
+            products: {},
+            weighings: [],
+            processes: [],
+            productPrices: {},
+            productTaras: {},
+            settings: {},
+            charts: {
+                sales: null,
+                losses: null
+            }
+        };
+
+        // Inicialização do sistema
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carrega dados salvos
+            loadData();
+            
+            // Inicializa componentes
+            initSidebar();
+            initMenu();
+            initProductList();
+            initAllProductsTable();
+            initForms();
+            initTabs();
+            initCharts();
+            initEventListeners();
+            
+            // Atualiza contadores
+            updateCounters();
+            
+            // Mostra a seção inicial
+            showSection('balanca');
+        });
+
+        // Carrega dados do localStorage
+        function loadData() {
+            const savedData = localStorage.getItem('bakerySystemData');
+            const savedSettings = localStorage.getItem('bakerySystemSettings');
+
+            appState.products = savedData ? JSON.parse(savedData).products : {...defaultProducts};
+            appState.weighings = savedData ? JSON.parse(savedData).weighings : [];
+            appState.processes = savedData ? JSON.parse(savedData).processes : [];
+            appState.productPrices = savedData ? JSON.parse(savedData).productPrices : {};
+            appState.productTaras = savedData ? JSON.parse(savedData).productTaras : {};
+            
+            appState.settings = savedSettings ? JSON.parse(savedSettings) : {...defaultSettings};
+            
+            applySettings();
+        }
+
+        // Salva dados no localStorage
+        function saveData() {
+            const dataToSave = {
+                products: appState.products,
+                weighings: appState.weighings,
+                processes: appState.processes,
+                productPrices: appState.productPrices,
+                productTaras: appState.productTaras
+            };
+            
+            localStorage.setItem('bakerySystemData', JSON.stringify(dataToSave));
+            localStorage.setItem('bakerySystemSettings', JSON.stringify(appState.settings));
+            
+            updateCounters();
+        }
+
+        // Aplica configurações
+        function applySettings() {
+            // Atualiza selects com valores salvos
+            document.getElementById('decimalPrecision').value = appState.settings.decimalPrecision;
+            document.getElementById('currencySymbol').value = appState.settings.currencySymbol;
+            document.getElementById('thousandSeparator').value = appState.settings.thousandSeparator;
+            document.getElementById('decimalSeparator').value = appState.settings.decimalSeparator;
+            
+            // Atualiza exibições
+            updateDisplay();
+        }
+
+        // Inicializa a barra lateral
+        function initSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menuToggle');
+            
+            // Alternar menu lateral
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('show');
+            });
+            
+            // Fechar menu ao clicar fora (em telas pequenas)
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 992 && !sidebar.contains(e.target) && e.target !== menuToggle) {
+                    sidebar.classList.remove('show');
+                }
+            });
+        }
+
+        // Inicializa o menu de navegação
+        function initMenu() {
+            document.querySelectorAll('.menu li').forEach(item => {
+                item.addEventListener('click', function() {
+                    const section = this.getAttribute('data-section');
+                    showSection(section);
+                    
+                    // Atualiza classe ativa
+                    document.querySelectorAll('.menu li').forEach(li => li.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Fecha o menu em telas pequenas
+                    if (window.innerWidth <= 992) {
+                        document.getElementById('sidebar').classList.remove('show');
+                    }
+                });
+            });
+        }
+
+        // Inicializa a lista de produtos
+        function initProductList() {
+            const productList = document.getElementById('productList');
+            productList.innerHTML = '';
+            
+            for (const code in appState.products) {
+                const product = appState.products[code];
+                addProductToList(code, product);
+            }
+            
+            // Configura busca de produtos
+            document.getElementById('searchProduct').addEventListener('input', filterProductList);
+        }
+
+        // Adiciona um produto à lista
+        function addProductToList(code, product) {
+            const productList = document.getElementById('productList');
+            const productItem = document.createElement('div');
+            
+            productItem.className = 'product-item';
+            productItem.setAttribute('data-code', code);
+            productItem.innerHTML = `
+                <div class="product-code">${code}</div>
+                <div class="product-name">${product.nome}</div>
+            `;
+            
+            productItem.addEventListener('click', function() {
+                selectProduct(code);
+            });
+            
+            productList.appendChild(productItem);
+        }
+
+        // Filtra lista de produtos
+        function filterProductList() {
+            const searchTerm = document.getElementById('searchProduct').value.toLowerCase();
+            const productItems = document.querySelectorAll('.product-item');
+            
+            productItems.forEach(item => {
+                const code = item.getAttribute('data-code');
+                const name = appState.products[code].nome.toLowerCase();
+                
+                if (code.includes(searchTerm) || name.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Seleciona um produto
+        function selectProduct(code) {
+            if (appState.products[code]) {
+                document.getElementById('productCode').value = code;
+                document.getElementById('productName').value = appState.products[code].nome;
+                document.getElementById('productInfo').textContent = `${code} - ${appState.products[code].nome}`;
+                
+                // Preenche preço e tara se existirem
+                document.getElementById('pricePerKg').value = appState.productPrices[code] || '';
+                document.getElementById('tara').value = appState.productTaras[code] || '';
+                
+                showNotification('Produto selecionado com sucesso!');
+            } else {
+                showNotification('Produto não encontrado!', 'error');
+            }
+        }
+
+        // Inicializa a tabela de todos os produtos
+        function initAllProductsTable() {
+            const tableBody = document.querySelector('#allProductsTable tbody');
+            tableBody.innerHTML = '';
+            
+            for (const code in appState.products) {
+                addProductToTable(code, appState.products[code]);
+            }
+            
+            // Configura busca na tabela
+            document.getElementById('searchAllProducts').addEventListener('input', filterAllProductsTable);
+        }
+
+        // Adiciona um produto à tabela
+        function addProductToTable(code, product) {
+            const tableBody = document.querySelector('#allProductsTable tbody');
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td>${code}</td>
+                <td>${product.nome}</td>
+                <td>${appState.productPrices[code] ? formatCurrency(appState.productPrices[code]) : '-'}</td>
+                <td>${appState.productTaras[code] ? formatNumber(appState.productTaras[code], appState.settings.decimalPrecision) + ' kg' : '-'}</td>
+                <td>
+                    <button class="btn btn-primary btn-sm select-product-btn" data-code="${code}">
+                        <i class="fas fa-balance-scale"></i>
+                    </button>
+                    <button class="btn btn-warning btn-sm edit-product-btn" data-code="${code}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm delete-product-btn" data-code="${code}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            // Adiciona eventos aos botões
+            row.querySelector('.select-product-btn').addEventListener('click', function() {
+                selectProduct(code);
+                showSection('balanca');
+            });
+            
+            row.querySelector('.edit-product-btn').addEventListener('click', function() {
+                editProduct(code);
+            });
+            
+            row.querySelector('.delete-product-btn').addEventListener('click', function() {
+                confirmDeleteProduct(code);
+            });
+            
+            tableBody.appendChild(row);
+        }
+
+        // Filtra tabela de produtos
+        function filterAllProductsTable() {
+            const searchTerm = document.getElementById('searchAllProducts').value.toLowerCase();
+            const rows = document.querySelectorAll('#allProductsTable tbody tr');
+            
+            rows.forEach(row => {
+                const code = row.cells[0].textContent;
+                const name = row.cells[1].textContent.toLowerCase();
+                
+                if (code.includes(searchTerm) || name.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Edita um produto
+        function editProduct(code) {
+            const product = appState.products[code];
+            
+            document.getElementById('newProductCode').value = code;
+            document.getElementById('newProductName').value = product.nome;
+            document.getElementById('newProductPrice').value = appState.productPrices[code] || '';
+            document.getElementById('newProductTara').value = appState.productTaras[code] || '';
+            
+            showSection('produtos');
+        }
+
+        // Confirma exclusão de produto
+        function confirmDeleteProduct(code) {
+            showConfirmationModal(
+                'Confirmar Exclusão',
+                `Tem certeza que deseja excluir o produto ${code} - ${appState.products[code].nome}?`,
+                function() {
+                    deleteProduct(code);
+                }
+            );
+        }
+
+        // Exclui um produto
+        function deleteProduct(code) {
+            delete appState.products[code];
+            delete appState.productPrices[code];
+            delete appState.productTaras[code];
+            
+            saveData();
+            
+            // Atualiza listas
+            document.getElementById('productList').innerHTML = '';
+            for (const code in appState.products) {
+                addProductToList(code, appState.products[code]);
+            }
+            
+            document.querySelector('#allProductsTable tbody').innerHTML = '';
+            for (const code in appState.products) {
+                addProductToTable(code, appState.products[code]);
+            }
+            
+            showNotification('Produto excluído com sucesso!');
+        }
+
+        // Inicializa formulários
+        function initForms() {
+            // Formulário de balança
+            document.getElementById('searchByCode').addEventListener('click', function() {
+                const code = document.getElementById('productCode').value;
+                selectProduct(code);
+            });
+            
+            document.getElementById('calculateBtn').addEventListener('click', calculateWeight);
+            document.getElementById('registerBtn').addEventListener('click', registerWeighing);
+            document.getElementById('clearBtn').addEventListener('click', clearBalanceForm);
+            document.getElementById('resetTara').addEventListener('click', resetTara);
+            document.getElementById('resetPrice').addEventListener('click', resetPrice);
+            
+            // Formulário de produtos
+            document.getElementById('productForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveProduct();
+            });
+            
+            document.getElementById('updateProductBtn').addEventListener('click', updateProduct);
+            document.getElementById('clearProductBtn').addEventListener('click', clearProductForm);
+            
+            // Formulário de processos
+            document.getElementById('calculateProcessBtn').addEventListener('click', calculateProcess);
+            document.getElementById('registerProcessBtn').addEventListener('click', registerProcess);
+            
+            // Formulário de relatórios
+            document.getElementById('reportType').addEventListener('change', toggleCustomDateRange);
+            document.getElementById('generateReportBtn').addEventListener('click', generateReport);
+            document.getElementById('exportCSVBtn').addEventListener('click', exportToCSV);
+            document.getElementById('exportExcelBtn').addEventListener('click', exportToExcel);
+            
+            // Configurações
+            document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+            document.getElementById('backupDataBtn').addEventListener('click', backupData);
+            document.getElementById('restoreDataBtn').addEventListener('click', restoreData);
+            document.getElementById('clearAllDataBtn').addEventListener('click', confirmClearAllData);
+            
+            // Seleção de produto nos processos
+            document.getElementById('processProductCode').addEventListener('change', function() {
+                const code = this.value;
+                if (appState.products[code]) {
+                    document.getElementById('processProductName').value = appState.products[code].nome;
+                }
+            });
+        }
+
+        // Inicializa abas
+        function initTabs() {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tab = this.getAttribute('data-tab');
+                    showTab(tab);
+                    
+                    // Atualiza classe ativa
+                    document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        }
+
+        // Inicializa gráficos
+        function initCharts() {
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            const lossesCtx = document.getElementById('lossesChart').getContext('2d');
+            
+            appState.charts.sales = new Chart(salesCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Vendas por Produto',
+                        data: [],
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            appState.charts.losses = new Chart(lossesCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Perdas', 'Sobras', 'Transformações'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.5)',
+                            'rgba(255, 206, 86, 0.5)',
+                            'rgba(75, 192, 192, 0.5)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+
+        // Inicializa listeners de eventos
+        function initEventListeners() {
+            // Redimensionamento da janela
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 992) {
+                    document.getElementById('sidebar').classList.remove('show');
+                }
+            });
+        }
+
+        // Mostra uma seção específica
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Atualiza dados quando a seção é mostrada
+            switch(sectionId) {
+                case 'balanca':
+                    updateWeighingTables();
+                    break;
+                case 'produtos':
+                    initAllProductsTable();
+                    break;
+                case 'processos':
+                    updateProcessHistoryTable();
+                    break;
+                case 'relatorios':
+                    updateReportPreview();
+                    break;
+            }
+        }
+
+        // Mostra uma aba específica
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabId + 'Tab').classList.add('active');
+        }
+
+        // Calcula pesagem
+        function calculateWeight() {
+            const weight = parseFloat(document.getElementById('weight').value);
+            const tara = parseFloat(document.getElementById('tara').value);
+            const pricePerKg = parseFloat(document.getElementById('pricePerKg').value.replace(',', '.'));
+            
+            if (isNaN(weight) || weight <= 0) {
+                showNotification('Peso inválido!', 'error');
+                return;
+            }
+            
+            if (isNaN(tara)) {
+                showNotification('Tara inválida!', 'error');
+                return;
+            }
+            
+            if (isNaN(pricePerKg) || pricePerKg <= 0) {
+                showNotification('Valor por kg inválido!', 'error');
+                return;
+            }
+            
+            const netWeight = weight - tara;
+            const totalValue = netWeight * pricePerKg;
+            
+            // Atualiza display
+            document.getElementById('pesoLiquidoDisplay').textContent = `${formatNumber(netWeight, appState.settings.decimalPrecision)} kg`;
+            document.getElementById('valorTotalDisplay').textContent = formatCurrency(totalValue);
+            
+            showNotification('Cálculo realizado com sucesso!');
+        }
+
+        // Registra pesagem
+        function registerWeighing() {
+            const code = document.getElementById('productCode').value;
+            const productName = document.getElementById('productName').value;
+            const weight = parseFloat(document.getElementById('weight').value);
+            const tara = parseFloat(document.getElementById('tara').value);
+            const pricePerKg = parseFloat(document.getElementById('pricePerKg').value.replace(',', '.'));
+            const operationType = document.getElementById('operationType').value;
+            const employee = document.getElementById('employee').value;
+            
+            // Validações
+            if (!code || !appState.products[code]) {
+                showNotification('Selecione um produto válido!', 'error');
+                return;
+            }
+            
+            if (isNaN(weight) || weight <= 0) {
+                showNotification('Peso inválido!', 'error');
+                return;
+            }
+            
+            if (isNaN(tara)) {
+                showNotification('Tara inválida!', 'error');
+                return;
+            }
+            
+            if (isNaN(pricePerKg) || pricePerKg <= 0) {
+                showNotification('Valor por kg inválido!', 'error');
+                return;
+            }
+            
+            if (!employee) {
+                showNotification('Informe o funcionário!', 'error');
+                return;
+            }
+            
+            const netWeight = weight - tara;
+            const totalValue = netWeight * pricePerKg;
+            const now = new Date();
+            
+            const weighing = {
+                id: Date.now(),
+                date: now.toISOString(),
+                code,
+                productName,
+                weight,
+                tara,
+                netWeight,
+                pricePerKg,
+                totalValue,
+                operationType,
+                employee
+            };
+            
+            appState.weighings.push(weighing);
+            saveData();
+            
+            // Atualiza tabelas
+            updateWeighingTables();
+            
+            // Limpa formulário
+            clearBalanceForm();
+            
+            showNotification('Pesagem registrada com sucesso!');
+        }
+
+        // Atualiza tabelas de pesagem
+        function updateWeighingTables() {
+            const controlTableBody = document.querySelector('#controlTable tbody');
+            const lossTableBody = document.querySelector('#lossTable tbody');
+            
+            controlTableBody.innerHTML = '';
+            lossTableBody.innerHTML = '';
+            
+            appState.weighings.forEach(weighing => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${formatDateTime(weighing.date)}</td>
+                    <td>${weighing.employee}</td>
+                    <td>${weighing.productName}</td>
+                    <td>${weighing.code}</td>
+                    <td>${formatNumber(weighing.weight, appState.settings.decimalPrecision)} kg</td>
+                    <td>${formatNumber(weighing.tara, appState.settings.decimalPrecision)} kg</td>
+                    <td>${formatNumber(weighing.netWeight, appState.settings.decimalPrecision)} kg</td>
+                    <td>${formatCurrency(weighing.totalValue)}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm pdf-btn" data-id="${weighing.id}">
+                            <i class="fas fa-file-pdf"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm delete-btn" data-id="${weighing.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                // Adiciona eventos aos botões
+                row.querySelector('.pdf-btn').addEventListener('click', function() {
+                    generateWeighingPDF(weighing.id);
+                });
+                
+                row.querySelector('.delete-btn').addEventListener('click', function() {
+                    confirmDeleteWeighing(weighing.id);
+                });
+                
+                if (weighing.operationType === 'controle') {
+                    controlTableBody.appendChild(row);
+                } else {
+                    lossTableBody.appendChild(row);
+                }
+            });
+        }
+
+        // Gera PDF para uma pesagem específica
+        function generateWeighingPDF(id) {
+            const weighing = appState.weighings.find(w => w.id === id);
+            if (!weighing) return;
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Cabeçalho
+            doc.setFontSize(18);
+            doc.text('Comprovante de Pesagem', 105, 15, { align: 'center' });
+            
+            doc.setFontSize(12);
+            doc.text(`PadariaPlus - ${formatDate(new Date())}`, 105, 25, { align: 'center' });
+            
+            // Linha divisória
+            doc.line(20, 30, 190, 30);
+            
+            // Dados da pesagem
+            doc.setFontSize(14);
+            doc.text('Dados da Pesagem:', 20, 40);
+            
+            doc.setFontSize(12);
+            let y = 50;
+            
+            doc.text(`Data/Hora: ${formatDateTime(weighing.date)}`, 20, y);
+            y += 10;
+            
+            doc.text(`Produto: ${weighing.productName} (${weighing.code})`, 20, y);
+            y += 10;
+            
+            doc.text(`Funcionário: ${weighing.employee}`, 20, y);
+            y += 10;
+            
+            doc.text(`Peso Bruto: ${formatNumber(weighing.weight, appState.settings.decimalPrecision)} kg`, 20, y);
+            y += 10;
+            
+            doc.text(`Tara: ${formatNumber(weighing.tara, appState.settings.decimalPrecision)} kg`, 20, y);
+            y += 10;
+            
+            doc.text(`Peso Líquido: ${formatNumber(weighing.netWeight, appState.settings.decimalPrecision)} kg`, 20, y);
+            y += 10;
+            
+            doc.text(`Valor por kg: ${formatCurrency(weighing.pricePerKg)}`, 20, y);
+            y += 10;
+            
+            doc.setFontSize(14);
+            doc.text(`Valor Total: ${formatCurrency(weighing.totalValue)}`, 20, y);
+            y += 15;
+            
+            // Rodapé
+            doc.setFontSize(10);
+            doc.text('Sistema PadariaPlus - Comprovante gerado automaticamente', 105, 280, { align: 'center' });
+            
+            // Salva o PDF
+            doc.save(`Pesagem_${weighing.code}_${formatDateTime(weighing.date).replace(/[\/\s:]/g, '_')}.pdf`);
+            
+            showNotification('PDF gerado com sucesso!');
+        }
+
+        // Confirma exclusão de pesagem
+        function confirmDeleteWeighing(id) {
+            showConfirmationModal(
+                'Confirmar Exclusão',
+                'Tem certeza que deseja excluir este registro de pesagem?',
+                function() {
+                    deleteWeighing(id);
+                }
+            );
+        }
+
+        // Exclui pesagem
+        function deleteWeighing(id) {
+            appState.weighings = appState.weighings.filter(w => w.id !== id);
+            saveData();
+            updateWeighingTables();
+            showNotification('Registro de pesagem excluído com sucesso!');
+        }
+
+        // Limpa formulário de balança
+        function clearBalanceForm() {
+            document.getElementById('weight').value = '';
+            document.getElementById('employee').value = '';
+            document.getElementById('pesoLiquidoDisplay').textContent = `0${appState.settings.decimalSeparator}${'0'.repeat(appState.settings.decimalPrecision)} kg`;
+            document.getElementById('valorTotalDisplay').textContent = `${appState.settings.currencySymbol} 0${appState.settings.decimalSeparator}00`;
+        }
+
+        // Reseta tara
+        function resetTara() {
+            const code = document.getElementById('productCode').value;
+            
+            if (code && appState.productTaras[code]) {
+                delete appState.productTaras[code];
+                saveData();
+                document.getElementById('tara').value = '';
+                showNotification('Tara resetada com sucesso!');
+            } else {
+                document.getElementById('tara').value = '';
+            }
+        }
+
+        // Reseta preço
+        function resetPrice() {
+            const code = document.getElementById('productCode').value;
+            
+            if (code && appState.productPrices[code]) {
+                delete appState.productPrices[code];
+                saveData();
+                document.getElementById('pricePerKg').value = '';
+                showNotification('Preço resetado com sucesso!');
+            } else {
+                document.getElementById('pricePerKg').value = '';
+            }
+        }
+
+        // Salva produto
+        function saveProduct() {
+            const code = document.getElementById('newProductCode').value;
+            const name = document.getElementById('newProductName').value;
+            const price = parseFloat(document.getElementById('newProductPrice').value);
+            const tara = parseFloat(document.getElementById('newProductTara').value);
+            
+            if (!code || !name) {
+                showNotification('Código e nome são obrigatórios!', 'error');
+                return;
+            }
+            
+            // Atualiza ou cria o produto
+            appState.products[code] = { nome: name };
+            
+            // Atualiza o preço (remove se for NaN ou vazio)
+            if (!isNaN(price)) {
+                appState.productPrices[code] = price;
+            } else {
+                delete appState.productPrices[code];
+            }
+            
+            // Atualiza a tara (remove se for NaN ou vazio)
+            if (!isNaN(tara)) {
+                appState.productTaras[code] = tara;
+            } else {
+                delete appState.productTaras[code];
+            }
+            
+            saveData();
+            
+            // Atualiza listas
+            document.getElementById('productList').innerHTML = '';
+            for (const code in appState.products) {
+                addProductToList(code, appState.products[code]);
+            }
+            
+            document.querySelector('#allProductsTable tbody').innerHTML = '';
+            for (const code in appState.products) {
+                addProductToTable(code, appState.products[code]);
+            }
+            
+            clearProductForm();
+            
+            showNotification('Produto salvo com sucesso!');
+        }
+
+        // Atualiza produto
+        function updateProduct() {
+            const code = document.getElementById('newProductCode').value;
+            const name = document.getElementById('newProductName').value;
+            const price = parseFloat(document.getElementById('newProductPrice').value);
+            const tara = parseFloat(document.getElementById('newProductTara').value);
+            
+            if (!appState.products[code]) {
+                showNotification('Produto não encontrado!', 'error');
+                return;
+            }
+            
+            // Atualiza o nome do produto
+            appState.products[code].nome = name;
+            
+            // Atualiza o preço (remove se for NaN ou vazio)
+            if (!isNaN(price)) {
+                appState.productPrices[code] = price;
+            } else {
+                delete appState.productPrices[code];
+            }
+            
+            // Atualiza a tara (remove se for NaN ou vazio)
+            if (!isNaN(tara)) {
+                appState.productTaras[code] = tara;
+            } else {
+                delete appState.productTaras[code];
+            }
+            
+            saveData();
+            
+            // Atualiza listas
+            document.getElementById('productList').innerHTML = '';
+            for (const code in appState.products) {
+                addProductToList(code, appState.products[code]);
+            }
+            
+            document.querySelector('#allProductsTable tbody').innerHTML = '';
+            for (const code in appState.products) {
+                addProductToTable(code, appState.products[code]);
+            }
+            
+            showNotification('Produto atualizado com sucesso!');
+        }
+
+        // Limpa formulário de produto
+        function clearProductForm() {
+            document.getElementById('newProductCode').value = '';
+            document.getElementById('newProductName').value = '';
+            document.getElementById('newProductPrice').value = '';
+            document.getElementById('newProductTara').value = '';
+        }
+
+        // Calcula processo (sobras/transformações)
+        function calculateProcess() {
+            const code = document.getElementById('processProductCode').value;
+            const originalWeight = parseFloat(document.getElementById('originalWeight').value);
+            const remainingWeight = parseFloat(document.getElementById('remainingWeight').value);
+            
+            if (!code || !appState.products[code]) {
+                showNotification('Selecione um produto válido!', 'error');
+                return;
+            }
+            
+            if (isNaN(originalWeight) || originalWeight <= 0) {
+                showNotification('Peso original inválido!', 'error');
+                return;
+            }
+            
+            if (isNaN(remainingWeight)) {
+                showNotification('Peso restante inválido!', 'error');
+                return;
+            }
+            
+            const weightDifference = originalWeight - remainingWeight;
+            let valueDifference = 0;
+            
+            if (appState.productPrices[code]) {
+                valueDifference = weightDifference * appState.productPrices[code];
+            }
+            
+            let costImpact = 0;
+            if (originalWeight > 0) {
+                costImpact = (weightDifference / originalWeight) * 100;
+            }
+            
+            // Atualiza resultados
+            document.getElementById('weightDifference').textContent = `${formatNumber(weightDifference, appState.settings.decimalPrecision)} kg`;
+            document.getElementById('valueDifference').textContent = formatCurrency(valueDifference);
+            document.getElementById('costImpact').textContent = `${formatNumber(costImpact, 2)}%`;
+            
+            showNotification('Cálculo realizado com sucesso!');
+        }
+
+        // Registra processo
+        function registerProcess() {
+            const code = document.getElementById('processProductCode').value;
+            const productName = appState.products[code] ? appState.products[code].nome : '';
+            const originalWeight = parseFloat(document.getElementById('originalWeight').value);
+            const remainingWeight = parseFloat(document.getElementById('remainingWeight').value);
+            const processType = document.getElementById('processType').value;
+            const employee = document.getElementById('processEmployee').value;
+            
+            // Validações
+            if (!code || !appState.products[code]) {
+                showNotification('Selecione um produto válido!', 'error');
+                return;
+            }
+            
+            if (isNaN(originalWeight) || originalWeight <= 0) {
+                showNotification('Peso original inválido!', 'error');
+                return;
+            }
+            
+            if (isNaN(remainingWeight)) {
+                showNotification('Peso restante inválido!', 'error');
+                return;
+            }
+            
+            if (!employee) {
+                showNotification('Informe o funcionário!', 'error');
+                return;
+            }
+            
+            const weightDifference = originalWeight - remainingWeight;
+            let valueDifference = 0;
+            
+            if (appState.productPrices[code]) {
+                valueDifference = weightDifference * appState.productPrices[code];
+            }
+            
+            let costImpact = 0;
+            if (originalWeight > 0) {
+                costImpact = (weightDifference / originalWeight) * 100;
+            }
+            
+            const now = new Date();
+            
+            const process = {
+                id: Date.now(),
+                date: now.toISOString(),
+                code,
+                productName,
+                originalWeight,
+                remainingWeight,
+                weightDifference,
+                valueDifference,
+                costImpact,
+                processType,
+                employee
+            };
+            
+            appState.processes.push(process);
+            saveData();
+            
+            // Atualiza tabela de histórico
+            updateProcessHistoryTable();
+            
+            showNotification('Processo registrado com sucesso!');
+        }
+
+        // Atualiza tabela de histórico de processos
+        function updateProcessHistoryTable() {
+            const tableBody = document.querySelector('#processHistoryTable tbody');
+            tableBody.innerHTML = '';
+            
+            appState.processes.forEach(process => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${formatDateTime(process.date)}</td>
+                    <td>${getProcessTypeName(process.processType)}</td>
+                    <td>${process.productName}</td>
+                    <td>${process.code}</td>
+                    <td>${formatNumber(process.weightDifference, appState.settings.decimalPrecision)} kg</td>
+                    <td>${formatCurrency(process.valueDifference)}</td>
+                    <td>${process.employee}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm pdf-btn" data-id="${process.id}">
+                            <i class="fas fa-file-pdf"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm delete-btn" data-id="${process.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                // Adiciona eventos aos botões
+                row.querySelector('.pdf-btn').addEventListener('click', function() {
+                    generateProcessPDF(process.id);
+                });
+                
+                row.querySelector('.delete-btn').addEventListener('click', function() {
+                    confirmDeleteProcess(process.id);
+                });
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Gera PDF para um processo específico
+        function generateProcessPDF(id) {
+            const process = appState.processes.find(p => p.id === id);
+            if (!process) return;
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Cabeçalho
+            doc.setFontSize(18);
+            doc.text('Relatório de Processo', 105, 15, { align: 'center' });
+            
+            doc.setFontSize(12);
+            doc.text(`PadariaPlus - ${formatDate(new Date())}`, 105, 25, { align: 'center' });
+            
+            // Linha divisória
+            doc.line(20, 30, 190, 30);
+            
+            // Dados do processo
+            doc.setFontSize(14);
+            doc.text('Dados do Processo:', 20, 40);
+            
+            doc.setFontSize(12);
+            let y = 50;
+            
+            doc.text(`Data/Hora: ${formatDateTime(process.date)}`, 20, y);
+            y += 10;
+            
+            doc.text(`Tipo: ${getProcessTypeName(process.processType)}`, 20, y);
+            y += 10;
+            
+            doc.text(`Produto: ${process.productName} (${process.code})`, 20, y);
+            y += 10;
+            
+            doc.text(`Funcionário: ${process.employee}`, 20, y);
+            y += 10;
+            
+            doc.text(`Peso Original: ${formatNumber(process.originalWeight, appState.settings.decimalPrecision)} kg`, 20, y);
+            y += 10;
+            
+            doc.text(`Peso Restante: ${formatNumber(process.remainingWeight, appState.settings.decimalPrecision)} kg`, 20, y);
+            y += 10;
+            
+            doc.text(`Diferença de Peso: ${formatNumber(process.weightDifference, appState.settings.decimalPrecision)} kg`, 20, y);
+            y += 10;
+            
+            doc.text(`Diferença de Valor: ${formatCurrency(process.valueDifference)}`, 20, y);
+            y += 10;
+            
+            doc.text(`Impacto no Custo: ${formatNumber(process.costImpact, 2)}%`, 20, y);
+            y += 15;
+            
+            // Rodapé
+            doc.setFontSize(10);
+            doc.text('Sistema PadariaPlus - Relatório gerado automaticamente', 105, 280, { align: 'center' });
+            
+            // Salva o PDF
+            doc.save(`Processo_${process.code}_${formatDateTime(process.date).replace(/[\/\s:]/g, '_')}.pdf`);
+            
+            showNotification('PDF gerado com sucesso!');
+        }
+
+        // Confirma exclusão de processo
+        function confirmDeleteProcess(id) {
+            showConfirmationModal(
+                'Confirmar Exclusão',
+                'Tem certeza que deseja excluir este registro de processo?',
+                function() {
+                    deleteProcess(id);
+                }
+            );
+        }
+
+        // Exclui processo
+        function deleteProcess(id) {
+            appState.processes = appState.processes.filter(p => p.id !== id);
+            saveData();
+            updateProcessHistoryTable();
+            showNotification('Registro de processo excluído com sucesso!');
+        }
+
+        // Retorna nome do tipo de processo
+        function getProcessTypeName(type) {
+            const types = {
+                'sobra': 'Sobra',
+                'transformacao': 'Transformação',
+                'perda': 'Perda'
+            };
+            
+            return types[type] || type;
+        }
+
+        // Alterna visibilidade do intervalo de datas personalizado
+        function toggleCustomDateRange() {
+            const reportType = document.getElementById('reportType').value;
+            document.getElementById('customDateRange').style.display = reportType === 'custom' ? 'flex' : 'none';
+        }
+
+        // Gera relatório
+        function generateReport() {
+            const reportType = document.getElementById('reportType').value;
+            const productCode = document.getElementById('reportProduct').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            let filteredWeighings = [...appState.weighings];
+            let filteredProcesses = [...appState.processes];
+            
+            // Filtra por produto
+            if (productCode !== 'all') {
+                filteredWeighings = filteredWeighings.filter(w => w.code === productCode);
+                filteredProcesses = filteredProcesses.filter(p => p.code === productCode);
+            }
+            
+            // Filtra por data
+            if (reportType === 'custom' && startDate && endDate) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                
+                filteredWeighings = filteredWeighings.filter(w => {
+                    const date = new Date(w.date);
+                    return date >= start && date <= end;
+                });
+                
+                filteredProcesses = filteredProcesses.filter(p => {
+                    const date = new Date(p.date);
+                    return date >= start && date <= end;
+                });
+            } else {
+                const now = new Date();
+                let start;
+                
+                if (reportType === 'daily') {
+                    start = new Date(now.setHours(0, 0, 0, 0));
+                } else if (reportType === 'weekly') {
+                    start = new Date(now.setDate(now.getDate() - 7));
+                } else if (reportType === 'monthly') {
+                    start = new Date(now.setMonth(now.getMonth() - 1));
+                }
+                
+                filteredWeighings = filteredWeighings.filter(w => new Date(w.date) >= start);
+                filteredProcesses = filteredProcesses.filter(p => new Date(p.date) >= start);
+            }
+            
+            // Calcula totais
+            const totalWeight = filteredWeighings.reduce((sum, w) => sum + w.netWeight, 0);
+            const totalValue = filteredWeighings.reduce((sum, w) => sum + w.totalValue, 0);
+            const totalLoss = filteredProcesses.reduce((sum, p) => sum + p.valueDifference, 0);
+            
+            // Gera conteúdo do relatório
+            let reportContent = `
+                <h3>Relatório ${getReportTypeName(reportType)}</h3>
+                ${productCode !== 'all' ? `<p>Produto: ${appState.products[productCode]?.nome || 'Desconhecido'} (${productCode})</p>` : ''}
+                ${reportType === 'custom' && startDate && endDate ? `<p>Período: ${formatDate(startDate)} a ${formatDate(endDate)}</p>` : ''}
+                
+                <h4>Resumo</h4>
+                <table class="table">
+                    <tr>
+                        <th>Total de Pesagens</th>
+                        <td>${filteredWeighings.length}</td>
+                    </tr>
+                    <tr>
+                        <th>Peso Total</th>
+                        <td>${formatNumber(totalWeight, appState.settings.decimalPrecision)} kg</td>
+                    </tr>
+                    <tr>
+                        <th>Valor Total</th>
+                        <td>${formatCurrency(totalValue)}</td>
+                    </tr>
+                    <tr>
+                        <th>Perdas/Quebras</th>
+                        <td>${formatCurrency(totalLoss)}</td>
+                    </tr>
+                </table>
+            `;
+            
+            document.getElementById('reportPreview').innerHTML = reportContent;
+            
+            // Atualiza gráficos
+            updateCharts(filteredWeighings, filteredProcesses);
+            
+            // Gera PDF do relatório
+            generateFullReportPDF(filteredWeighings, filteredProcesses, reportType, productCode, startDate, endDate);
+        }
+
+        // Gera PDF completo do relatório
+        function generateFullReportPDF(weighings, processes, reportType, productCode, startDate, endDate) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Cabeçalho
+            doc.setFontSize(18);
+            doc.text(`Relatório ${getReportTypeName(reportType)}`, 105, 15, { align: 'center' });
+            
+            doc.setFontSize(12);
+            let y = 25;
+            
+            if (productCode !== 'all') {
+                doc.text(`Produto: ${appState.products[productCode]?.nome || 'Desconhecido'} (${productCode})`, 105, y, { align: 'center' });
+                y += 7;
+            }
+            
+            if (reportType === 'custom' && startDate && endDate) {
+                doc.text(`Período: ${formatDate(startDate)} a ${formatDate(endDate)}`, 105, y, { align: 'center' });
+                y += 7;
+            }
+            
+            doc.text(`PadariaPlus - ${formatDate(new Date())}`, 105, y, { align: 'center' });
+            y += 15;
+            
+            // Linha divisória
+            doc.line(20, y, 190, y);
+            y += 10;
+            
+            // Resumo
+            doc.setFontSize(14);
+            doc.text('Resumo', 20, y);
+            y += 10;
+            
+            const totalWeight = weighings.reduce((sum, w) => sum + w.netWeight, 0);
+            const totalValue = weighings.reduce((sum, w) => sum + w.totalValue, 0);
+            const totalLoss = processes.reduce((sum, p) => sum + p.valueDifference, 0);
+            
+            doc.setFontSize(12);
+            doc.text(`Total de Pesagens: ${weighings.length}`, 20, y);
+            y += 7;
+            
+            doc.text(`Peso Total: ${formatNumber(totalWeight, appState.settings.decimalPrecision)} kg`, 20, y);
+            y += 7;
+            
+            doc.text(`Valor Total: ${formatCurrency(totalValue)}`, 20, y);
+            y += 7;
+            
+            doc.text(`Perdas/Quebras: ${formatCurrency(totalLoss)}`, 20, y);
+            y += 15;
+            
+            // Tabela de pesagens
+            if (weighings.length > 0) {
+                doc.setFontSize(14);
+                doc.text('Detalhes das Pesagens', 20, y);
+                y += 10;
+                
+                const weighingsData = weighings.map(w => [
+                    formatDateTime(w.date),
+                    w.employee,
+                    w.productName,
+                    w.code,
+                    `${formatNumber(w.netWeight, appState.settings.decimalPrecision)} kg`,
+                    formatCurrency(w.totalValue)
+                ]);
+                
+                doc.autoTable({
+                    startY: y,
+                    head: [['Data/Hora', 'Funcionário', 'Produto', 'Código', 'Peso Líquido', 'Valor']],
+                    body: weighingsData,
+                    margin: { left: 20 },
+                    styles: { fontSize: 9 }
+                });
+                
+                y = doc.lastAutoTable.finalY + 10;
+            }
+            
+            // Tabela de processos
+            if (processes.length > 0) {
+                doc.setFontSize(14);
+                doc.text('Detalhes dos Processos', 20, y);
+                y += 10;
+                
+                const processesData = processes.map(p => [
+                    formatDateTime(p.date),
+                    getProcessTypeName(p.processType),
+                    p.productName,
+                    p.code,
+                    `${formatNumber(p.weightDifference, appState.settings.decimalPrecision)} kg`,
+                    formatCurrency(p.valueDifference),
+                    p.employee
+                ]);
+                
+                doc.autoTable({
+                    startY: y,
+                    head: [['Data/Hora', 'Tipo', 'Produto', 'Código', 'Dif. Peso', 'Dif. Valor', 'Funcionário']],
+                    body: processesData,
+                    margin: { left: 20 },
+                    styles: { fontSize: 9 }
+                });
+            }
+            
+            // Rodapé
+            doc.setFontSize(10);
+            doc.text('Sistema PadariaPlus - Relatório gerado automaticamente', 105, 280, { align: 'center' });
+            
+            // Salva o PDF
+            let fileName = `Relatorio_${getReportTypeName(reportType)}`;
+            if (productCode !== 'all') fileName += `_${productCode}`;
+            if (reportType === 'custom') fileName += `_${formatDate(startDate)}_a_${formatDate(endDate)}`;
+            
+            doc.save(`${fileName}.pdf`);
+            
+            showNotification('Relatório PDF gerado com sucesso!');
+        }
+
+        // Retorna nome do tipo de relatório
+        function getReportTypeName(type) {
+            const types = {
+                'daily': 'Diário',
+                'weekly': 'Semanal',
+                'monthly': 'Mensal',
+                'custom': 'Personalizado'
+            };
+            
+            return types[type] || type;
+        }
+
+        // Exporta para CSV
+        function exportToCSV() {
+            const reportType = document.getElementById('reportType').value;
+            const productCode = document.getElementById('reportProduct').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            let filteredWeighings = [...appState.weighings];
+            let filteredProcesses = [...appState.processes];
+            
+            // Filtra por produto
+            if (productCode !== 'all') {
+                filteredWeighings = filteredWeighings.filter(w => w.code === productCode);
+                filteredProcesses = filteredProcesses.filter(p => p.code === productCode);
+            }
+            
+            // Filtra por data
+            if (reportType === 'custom' && startDate && endDate) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                
+                filteredWeighings = filteredWeighings.filter(w => {
+                    const date = new Date(w.date);
+                    return date >= start && date <= end;
+                });
+                
+                filteredProcesses = filteredProcesses.filter(p => {
+                    const date = new Date(p.date);
+                    return date >= start && date <= end;
+                });
+            } else {
+                const now = new Date();
+                let start;
+                
+                if (reportType === 'daily') {
+                    start = new Date(now.setHours(0, 0, 0, 0));
+                } else if (reportType === 'weekly') {
+                    start = new Date(now.setDate(now.getDate() - 7));
+                } else if (reportType === 'monthly') {
+                    start = new Date(now.setMonth(now.getMonth() - 1));
+                }
+                
+                filteredWeighings = filteredWeighings.filter(w => new Date(w.date) >= start);
+                filteredProcesses = filteredProcesses.filter(p => new Date(p.date) >= start);
+            }
+            
+            // Cria conteúdo CSV
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            // Cabeçalho
+            csvContent += "Tipo de Relatório: " + getReportTypeName(reportType) + "\r\n";
+            if (productCode !== 'all') {
+                csvContent += "Produto: " + (appState.products[productCode]?.nome || 'Desconhecido') + " (" + productCode + ")\r\n";
+            }
+            if (reportType === 'custom' && startDate && endDate) {
+                csvContent += "Período: " + formatDate(startDate) + " a " + formatDate(endDate) + "\r\n";
+            }
+            csvContent += "\r\n";
+            
+            // Pesagens
+            if (filteredWeighings.length > 0) {
+                csvContent += "Pesagens\r\n";
+                csvContent += "Data/Hora,Funcionário,Produto,Código,Peso Líquido,Valor\r\n";
+                
+                filteredWeighings.forEach(w => {
+                    csvContent += `${formatDateTime(w.date)},${w.employee},${w.productName},${w.code},${formatNumber(w.netWeight, appState.settings.decimalPrecision)} kg,${formatCurrency(w.totalValue)}\r\n`;
+                });
+                
+                csvContent += "\r\n";
+            }
+            
+            // Processos
+            if (filteredProcesses.length > 0) {
+                csvContent += "Processos\r\n";
+                csvContent += "Data/Hora,Tipo,Produto,Código,Dif. Peso,Dif. Valor,Funcionário\r\n";
+                
+                filteredProcesses.forEach(p => {
+                    csvContent += `${formatDateTime(p.date)},${getProcessTypeName(p.processType)},${p.productName},${p.code},${formatNumber(p.weightDifference, appState.settings.decimalPrecision)} kg,${formatCurrency(p.valueDifference)},${p.employee}\r\n`;
+                });
+            }
+            
+            // Totais
+            const totalWeight = filteredWeighings.reduce((sum, w) => sum + w.netWeight, 0);
+            const totalValue = filteredWeighings.reduce((sum, w) => sum + w.totalValue, 0);
+            const totalLoss = filteredProcesses.reduce((sum, p) => sum + p.valueDifference, 0);
+            
+            csvContent += "\r\n";
+            csvContent += "Resumo\r\n";
+            csvContent += `Total de Pesagens,${filteredWeighings.length}\r\n`;
+            csvContent += `Peso Total,${formatNumber(totalWeight, appState.settings.decimalPrecision)} kg\r\n`;
+            csvContent += `Valor Total,${formatCurrency(totalValue)}\r\n`;
+            csvContent += `Perdas/Quebras,${formatCurrency(totalLoss)}\r\n`;
+            
+            // Cria link de download
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            
+            let fileName = `Relatorio_${getReportTypeName(reportType)}`;
+            if (productCode !== 'all') fileName += `_${productCode}`;
+            if (reportType === 'custom') fileName += `_${formatDate(startDate)}_a_${formatDate(endDate)}`;
+            
+            link.setAttribute("download", `${fileName}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('Exportação para CSV realizada com sucesso!');
+        }
+
+        // Exporta para Excel
+        function exportToExcel() {
+            // Implementação básica - na prática você usaria uma biblioteca como SheetJS
+            // Esta é uma simulação que cria um CSV com extensão .xls
+            const reportType = document.getElementById('reportType').value;
+            const productCode = document.getElementById('reportProduct').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            let filteredWeighings = [...appState.weighings];
+            let filteredProcesses = [...appState.processes];
+            
+            // Filtra por produto
+            if (productCode !== 'all') {
+                filteredWeighings = filteredWeighings.filter(w => w.code === productCode);
+                filteredProcesses = filteredProcesses.filter(p => p.code === productCode);
+            }
+            
+            // Filtra por data
+            if (reportType === 'custom' && startDate && endDate) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                
+                filteredWeighings = filteredWeighings.filter(w => {
+                    const date = new Date(w.date);
+                    return date >= start && date <= end;
+                });
+                
+                filteredProcesses = filteredProcesses.filter(p => {
+                    const date = new Date(p.date);
+                    return date >= start && date <= end;
+                });
+            } else {
+                const now = new Date();
+                let start;
+                
+                if (reportType === 'daily') {
+                    start = new Date(now.setHours(0, 0, 0, 0));
+                } else if (reportType === 'weekly') {
+                    start = new Date(now.setDate(now.getDate() - 7));
+                } else if (reportType === 'monthly') {
+                    start = new Date(now.setMonth(now.getMonth() - 1));
+                }
+                
+                filteredWeighings = filteredWeighings.filter(w => new Date(w.date) >= start);
+                filteredProcesses = filteredProcesses.filter(p => new Date(p.date) >= start);
+            }
+            
+            // Cria conteúdo CSV (simulando Excel)
+            let excelContent = "data:text/csv;charset=utf-8,";
+            
+            // Cabeçalho
+            excelContent += "Tipo de Relatório:," + getReportTypeName(reportType) + "\r\n";
+            if (productCode !== 'all') {
+                excelContent += "Produto:," + (appState.products[productCode]?.nome || 'Desconhecido') + ",(" + productCode + ")\r\n";
+            }
+            if (reportType === 'custom' && startDate && endDate) {
+                excelContent += "Período:," + formatDate(startDate) + " a " + formatDate(endDate) + "\r\n";
+            }
+            excelContent += "\r\n";
+            
+            // Pesagens
+            if (filteredWeighings.length > 0) {
+                excelContent += "Pesagens\r\n";
+                excelContent += "Data/Hora,Funcionário,Produto,Código,Peso Líquido,Valor\r\n";
+                
+                filteredWeighings.forEach(w => {
+                    excelContent += `${formatDateTime(w.date)},${w.employee},${w.productName},${w.code},${formatNumber(w.netWeight, appState.settings.decimalPrecision)} kg,${formatCurrency(w.totalValue)}\r\n`;
+                });
+                
+                excelContent += "\r\n";
+            }
+            
+            // Processos
+            if (filteredProcesses.length > 0) {
+                excelContent += "Processos\r\n";
+                excelContent += "Data/Hora,Tipo,Produto,Código,Dif. Peso,Dif. Valor,Funcionário\r\n";
+                
+                filteredProcesses.forEach(p => {
+                    excelContent += `${formatDateTime(p.date)},${getProcessTypeName(p.processType)},${p.productName},${p.code},${formatNumber(p.weightDifference, appState.settings.decimalPrecision)} kg,${formatCurrency(p.valueDifference)},${p.employee}\r\n`;
+                });
+            }
+            
+            // Totais
+            const totalWeight = filteredWeighings.reduce((sum, w) => sum + w.netWeight, 0);
+            const totalValue = filteredWeighings.reduce((sum, w) => sum + w.totalValue, 0);
+            const totalLoss = filteredProcesses.reduce((sum, p) => sum + p.valueDifference, 0);
+            
+            excelContent += "\r\n";
+            excelContent += "Resumo\r\n";
+            excelContent += `Total de Pesagens,${filteredWeighings.length}\r\n`;
+            excelContent += `Peso Total,${formatNumber(totalWeight, appState.settings.decimalPrecision)} kg\r\n`;
+            excelContent += `Valor Total,${formatCurrency(totalValue)}\r\n`;
+            excelContent += `Perdas/Quebras,${formatCurrency(totalLoss)}\r\n`;
+            
+            // Cria link de download
+            const encodedUri = encodeURI(excelContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            
+            let fileName = `Relatorio_${getReportTypeName(reportType)}`;
+            if (productCode !== 'all') fileName += `_${productCode}`;
+            if (reportType === 'custom') fileName += `_${formatDate(startDate)}_a_${formatDate(endDate)}`;
+            
+            link.setAttribute("download", `${fileName}.xls`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('Exportação para Excel realizada com sucesso!');
+        }
+
+        // Atualiza gráficos
+        function updateCharts(weighings, processes) {
+            // Gráfico de vendas por produto
+            const salesByProduct = {};
+            
+            weighings.forEach(w => {
+                if (!salesByProduct[w.productName]) {
+                    salesByProduct[w.productName] = 0;
+                }
+                salesByProduct[w.productName] += w.totalValue;
+            });
+            
+            appState.charts.sales.data.labels = Object.keys(salesByProduct);
+            appState.charts.sales.data.datasets[0].data = Object.values(salesByProduct);
+            appState.charts.sales.update();
+            
+            // Gráfico de perdas/sobras
+            const lossTypes = {
+                'perda': 0,
+                'sobra': 0,
+                'transformacao': 0
+            };
+            
+            processes.forEach(p => {
+                lossTypes[p.processType] += Math.abs(p.valueDifference);
+            });
+            
+            appState.charts.losses.data.datasets[0].data = [
+                lossTypes['perda'],
+                lossTypes['sobra'],
+                lossTypes['transformacao']
+            ];
+            appState.charts.losses.update();
+        }
+
+        // Salva configurações
+        function saveSettings() {
+            appState.settings.decimalPrecision = parseInt(document.getElementById('decimalPrecision').value);
+            appState.settings.currencySymbol = document.getElementById('currencySymbol').value;
+            appState.settings.thousandSeparator = document.getElementById('thousandSeparator').value;
+            appState.settings.decimalSeparator = document.getElementById('decimalSeparator').value;
+            
+            saveData();
+            applySettings();
+            showNotification('Configurações salvas com sucesso!');
+        }
+
+        // Faz backup dos dados
+        function backupData() {
+            const dataToSave = {
+                products: appState.products,
+                weighings: appState.weighings,
+                processes: appState.processes,
+                productPrices: appState.productPrices,
+                productTaras: appState.productTaras
+            };
+            
+            const dataStr = JSON.stringify(dataToSave);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            
+            const exportName = `backup-padaria-${new Date().toISOString().slice(0, 10)}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportName);
+            linkElement.click();
+            
+            // Atualiza data do último backup
+            document.getElementById('lastBackup').textContent = formatDateTime(new Date());
+            showNotification('Backup realizado com sucesso!');
+        }
+
+        // Restaura dados de backup
+        function restoreData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = event => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        
+                        showConfirmationModal(
+                            'Confirmar Restauração',
+                            'Tem certeza que deseja restaurar este backup? Todos os dados atuais serão substituídos.',
+                            function() {
+                                appState.products = data.products || {...defaultProducts};
+                                appState.weighings = data.weighings || [];
+                                appState.processes = data.processes || [];
+                                appState.productPrices = data.productPrices || {};
+                                appState.productTaras = data.productTaras || {};
+                                
+                                saveData();
+                                
+                                // Atualiza interfaces
+                                document.getElementById('productList').innerHTML = '';
+                                for (const code in appState.products) {
+                                    addProductToList(code, appState.products[code]);
+                                }
+                                
+                                document.querySelector('#allProductsTable tbody').innerHTML = '';
+                                for (const code in appState.products) {
+                                    addProductToTable(code, appState.products[code]);
+                                }
+                                
+                                updateWeighingTables();
+                                updateProcessHistoryTable();
+                                updateCounters();
+                                
+                                // Atualiza data do último backup
+                                document.getElementById('lastBackup').textContent = formatDateTime(new Date());
+                                showNotification('Backup restaurado com sucesso!');
+                            }
+                        );
+                    } catch (error) {
+                        showNotification('Erro ao ler arquivo de backup!', 'error');
+                    }
+                };
+                
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+
+        // Confirma limpeza de todos os dados
+        function confirmClearAllData() {
+            showConfirmationModal(
+                'Confirmar Limpeza',
+                'Tem certeza que deseja limpar TODOS os dados? Esta ação não pode ser desfeita.',
+                function() {
+                    clearAllData();
+                }
+            );
+        }
+
+        // Limpa todos os dados
+        function clearAllData() {
+            appState.products = {...defaultProducts};
+            appState.weighings = [];
+            appState.processes = [];
+            appState.productPrices = {};
+            appState.productTaras = {};
+            
+            saveData();
+            
+            // Atualiza interfaces
+            document.getElementById('productList').innerHTML = '';
+            for (const code in appState.products) {
+                addProductToList(code, appState.products[code]);
+            }
+            
+            document.querySelector('#allProductsTable tbody').innerHTML = '';
+            for (const code in appState.products) {
+                addProductToTable(code, appState.products[code]);
+            }
+            
+            updateWeighingTables();
+            updateProcessHistoryTable();
+            updateCounters();
+            
+            showNotification('Todos os dados foram limpos!');
+        }
+
+        // Atualiza contadores
+        function updateCounters() {
+            document.getElementById('totalProducts').textContent = Object.keys(appState.products).length;
+            document.getElementById('totalWeighings').textContent = appState.weighings.length;
+            document.getElementById('totalProcesses').textContent = appState.processes.length;
+            
+            // Atualiza lista de produtos para relatórios
+            const productSelect = document.getElementById('reportProduct');
+            productSelect.innerHTML = '<option value="all">Todos</option>';
+            
+            for (const code in appState.products) {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = `${code} - ${appState.products[code].nome}`;
+                productSelect.appendChild(option);
+            }
+        }
+
+        // Mostra modal de confirmação
+        function showConfirmationModal(title, message, confirmCallback) {
+            const modal = document.getElementById('confirmationModal');
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            
+            modal.style.display = 'flex';
+            
+            document.getElementById('modalConfirmBtn').onclick = function() {
+                modal.style.display = 'none';
+                confirmCallback();
+            };
+            
+            document.getElementById('modalCancelBtn').onclick = function() {
+                modal.style.display = 'none';
+            };
+        }
+
+        // Mostra notificação
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const icon = notification.querySelector('i');
+            
+            notification.className = 'notification';
+            icon.className = type === 'error' ? 'fas fa-exclamation-circle' : 
+                             type === 'warning' ? 'fas fa-exclamation-triangle' : 
+                             'fas fa-check-circle';
+            
+            notification.textContent = message;
+            notification.insertBefore(icon, notification.firstChild);
+            
+            notification.classList.add('show', type);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Formata número com casas decimais
+        function formatNumber(value, decimals) {
+            if (isNaN(value)) return '0';
+            
+            return value.toFixed(decimals).replace('.', appState.settings.decimalSeparator);
+        }
+
+        // Formata valor monetário
+        function formatCurrency(value) {
+            if (isNaN(value)) return `${appState.settings.currencySymbol} 0${appState.settings.decimalSeparator}00`;
+            
+            return `${appState.settings.currencySymbol} ${value.toFixed(2).replace('.', appState.settings.decimalSeparator)}`;
+        }
+
+        // Formata data/hora
+        function formatDateTime(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleString('pt-BR');
+        }
+
+        // Formata data
+        function formatDate(isoStringOrDate) {
+            const date = typeof isoStringOrDate === 'string' ? new Date(isoStringOrDate) : isoStringOrDate;
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        // Atualiza display com configurações
+        function updateDisplay() {
+            // Atualiza exibições de peso e valor
+            document.getElementById('pesoLiquidoDisplay').textContent = `0${appState.settings.decimalSeparator}${'0'.repeat(appState.settings.decimalPrecision)} kg`;
+            document.getElementById('valorTotalDisplay').textContent = `${appState.settings.currencySymbol} 0${appState.settings.decimalSeparator}00`;
+            
+            // Atualiza tabelas
+            updateWeighingTables();
+            updateProcessHistoryTable();
+        }
+
+        // Atualiza pré-visualização do relatório
+        function updateReportPreview() {
+            document.getElementById('reportPreview').innerHTML = `
+                <div class="text-center text-muted">
+                    <i class="fas fa-chart-pie fa-3x mb-2"></i>
+                    <p>Selecione os filtros e gere um relatório para visualizar os dados.</p>
+                </div>
+            `;
+        }
+    </script>
 </body>
+
 </html>
