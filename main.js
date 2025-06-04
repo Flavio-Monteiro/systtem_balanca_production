@@ -1865,3 +1865,198 @@
     
     showNotification('Relatório de pesagens gerado com sucesso!');
 }
+
+// Adicione esta função no seu script
+function generateProductWeighingReport() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Agrupa pesagens por tipo de produto
+    const productsReport = {};
+    
+    appState.weighings.forEach(weighing => {
+        if (!productsReport[weighing.productName]) {
+            productsReport[weighing.productName] = {
+                count: 0,
+                totalWeight: 0,
+                totalValue: 0,
+                weighings: []
+            };
+        }
+        
+        productsReport[weighing.productName].count++;
+        productsReport[weighing.productName].totalWeight += weighing.netWeight;
+        productsReport[weighing.productName].totalValue += weighing.totalValue;
+        productsReport[weighing.productName].weighings.push(weighing);
+    });
+    
+    // Ordena produtos por nome
+    const sortedProducts = Object.keys(productsReport).sort();
+    
+    // Cabeçalho
+    doc.setFontSize(18);
+    doc.text('Relatório de Pesagens por Produto', 105, 15, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.text(`PadariaPlus - ${formatDate(new Date())}`, 105, 25, { align: 'center' });
+    
+    // Linha divisória
+    doc.line(20, 30, 190, 30);
+    
+    let y = 40;
+    let page = 1;
+    
+    // Para cada produto
+    sortedProducts.forEach(productName => {
+        const productData = productsReport[productName];
+        
+        // Verifica se precisa de nova página
+        if (y > 250) {
+            doc.addPage();
+            y = 20;
+            page++;
+        }
+        
+        // Título do produto
+        doc.setFontSize(14);
+        doc.text(productName, 20, y);
+        y += 10;
+        
+        // Resumo do produto
+        doc.setFontSize(12);
+        doc.text(`Total de pesagens: ${productData.count}`, 20, y);
+        y += 7;
+        
+        doc.text(`Peso total: ${formatNumber(productData.totalWeight, appState.settings.decimalPrecision)} kg`, 20, y);
+        y += 7;
+        
+        doc.text(`Valor total: ${formatCurrency(productData.totalValue)}`, 20, y);
+        y += 10;
+        
+        // Tabela de pesagens
+        const weighingsData = productData.weighings.map(w => [
+            formatDateTime(w.date),
+            w.employee,
+            `${formatNumber(w.netWeight, appState.settings.decimalPrecision)} kg`,
+            formatCurrency(w.totalValue),
+            w.operationType === 'controle' ? 'Controle' : 'Perda/Quebra'
+        ]);
+        
+        doc.autoTable({
+            startY: y,
+            head: [['Data/Hora', 'Funcionário', 'Peso Líquido', 'Valor', 'Tipo']],
+            body: weighingsData,
+            margin: { left: 20 },
+            styles: { fontSize: 9 },
+            headStyles: { fillColor: [74, 111, 165] }
+        });
+        
+        y = doc.lastAutoTable.finalY + 10;
+    });
+    
+    // Página de totais
+    doc.addPage();
+    y = 20;
+    
+    // Título
+    doc.setFontSize(18);
+    doc.text('Resumo Geral de Pesagens', 105, y, { align: 'center' });
+    y += 15;
+    
+    // Linha divisória
+    doc.line(20, y, 190, y);
+    y += 10;
+    
+    // Calcula totais gerais
+    const totalWeighings = appState.weighings.length;
+    const totalWeight = appState.weighings.reduce((sum, w) => sum + w.netWeight, 0);
+    const totalValue = appState.weighings.reduce((sum, w) => sum + w.totalValue, 0);
+    
+    // Totais por tipo de operação
+    const controlWeighings = appState.weighings.filter(w => w.operationType === 'controle');
+    const lossWeighings = appState.weighings.filter(w => w.operationType !== 'controle');
+    
+    const controlWeight = controlWeighings.reduce((sum, w) => sum + w.netWeight, 0);
+    const controlValue = controlWeighings.reduce((sum, w) => sum + w.totalValue, 0);
+    
+    const lossWeight = lossWeighings.reduce((sum, w) => sum + w.netWeight, 0);
+    const lossValue = lossWeighings.reduce((sum, w) => sum + w.totalValue, 0);
+    
+    // Resumo geral
+    doc.setFontSize(14);
+    doc.text('Totais Gerais', 20, y);
+    y += 10;
+    
+    doc.setFontSize(12);
+    doc.text(`Total de pesagens: ${totalWeighings}`, 20, y);
+    y += 7;
+    
+    doc.text(`Peso total: ${formatNumber(totalWeight, appState.settings.decimalPrecision)} kg`, 20, y);
+    y += 7;
+    
+    doc.text(`Valor total: ${formatCurrency(totalValue)}`, 20, y);
+    y += 15;
+    
+    // Por tipo de operação
+    doc.setFontSize(14);
+    doc.text('Por Tipo de Operação', 20, y);
+    y += 10;
+    
+    doc.setFontSize(12);
+    doc.text('Controle:', 20, y);
+    y += 7;
+    
+    doc.text(`- Pesagens: ${controlWeighings.length}`, 30, y);
+    y += 7;
+    
+    doc.text(`- Peso: ${formatNumber(controlWeight, appState.settings.decimalPrecision)} kg`, 30, y);
+    y += 7;
+    
+    doc.text(`- Valor: ${formatCurrency(controlValue)}`, 30, y);
+    y += 10;
+    
+    doc.text('Perdas/Quebras:', 20, y);
+    y += 7;
+    
+    doc.text(`- Pesagens: ${lossWeighings.length}`, 30, y);
+    y += 7;
+    
+    doc.text(`- Peso: ${formatNumber(lossWeight, appState.settings.decimalPrecision)} kg`, 30, y);
+    y += 7;
+    
+    doc.text(`- Valor: ${formatCurrency(lossValue)}`, 30, y);
+    y += 15;
+    
+    // Por produto (resumo)
+    doc.setFontSize(14);
+    doc.text('Resumo por Produto', 20, y);
+    y += 10;
+    
+    const summaryData = sortedProducts.map(productName => [
+        productName,
+        productsReport[productName].count,
+        `${formatNumber(productsReport[productName].totalWeight, appState.settings.decimalPrecision)} kg`,
+        formatCurrency(productsReport[productName].totalValue)
+    ]);
+    
+    doc.autoTable({
+        startY: y,
+        head: [['Produto', 'Qtd', 'Peso Total', 'Valor Total']],
+        body: summaryData,
+        margin: { left: 20 },
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [74, 111, 165] }
+    });
+    
+    // Rodapé
+    doc.setFontSize(10);
+    doc.text('Sistema PadariaPlus - Relatório gerado automaticamente', 105, 280, { align: 'center' });
+    
+    // Salva o PDF
+    doc.save(`Relatorio_Pesagens_${formatDate(new Date()).replace(/\//g, '-')}.pdf`);
+    
+    showNotification('Relatório de pesagens gerado com sucesso!');
+}
+
+// Adicione este event listener no seu initForms()
+document.getElementById('generateWeighingReport').addEventListener('click', generateProductWeighingReport);
